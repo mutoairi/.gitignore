@@ -631,14 +631,37 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap, srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
+		
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+		ImGui::Begin("WIndow");
+		ImGui::DragFloat3("Color", &materialData->x, 0.01f);
+
+		// カラーパレットを縮小表示するためのflag
+		static bool showColorPicker = false;
+
+		// カラーパレットの縮小表示
+		if (!showColorPicker)
+		{
+			if (ImGui::Button("color palette"))
+				showColorPicker = true;
+		}
+
+		// カラーパレットの拡大表示
+		if (showColorPicker)
+		{
+			ImGui::ColorPicker4("Color", (float*)&materialData->x, ImGuiColorEditFlags_Float);
+			
+
+		}
 		
-		//ImGuiウィンドウの作成
-		ImGui::ShowDemoWindow();
+		ImGui::End();
+		
 		//ImGUi内部のコマンドを生成する
 		ImGui::Render();
+		
+
 		//windowにメッセージが来てたら最優先で処理させる
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
