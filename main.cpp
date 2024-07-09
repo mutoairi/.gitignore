@@ -985,8 +985,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//解放処理
 	CloseHandle(fenceEvent);
 	fence->Release();
+	dsvDescriptorHeap->Release();
 	rtvDescriptorHeap->Release();
 	srvDescriptorHeap->Release();
+	depthStencilResource->Release();
+	textureResource->Release();
 	swapChainResources[0]->Release();
 	swapChainResources[1]->Release();
 	swapChain->Release();
@@ -996,6 +999,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	device->Release();
 	useAdapter->Release();
 	dxgiFactory->Release();
+	
 
 #ifdef  _DEBUG
 	debugController->Release();
