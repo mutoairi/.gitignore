@@ -1,5 +1,10 @@
 #include"object3d.hlsli"
 
+struct TransformationMatrix
+{
+    float32_t4x4 WVP;
+};
+ConstantBuffer<TransformationMatrix> gTransformationMatrix : register(b0);
 
 struct VertexShaderInput
 {
@@ -10,7 +15,7 @@ struct VertexShaderInput
 VertexShaderOutput main(VertexShaderInput input)
 {
     VertexShaderOutput output;
-    output.position = input.position;
+    output.position = mul(input.position, gTransformationMatrix.WVP);
     output.texcoord = input.texcoord;
     return output;
 }

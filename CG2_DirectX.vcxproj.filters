@@ -49,6 +49,7 @@
     <ClInclude Include="externals\imugui\imstb_rectpack.h" />
     <ClInclude Include="externals\imugui\imstb_textedit.h" />
     <ClInclude Include="externals\imugui\imstb_truetype.h" />
+    <ClInclude Include="makeMatrix.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imugui\LICENSE.txt" />

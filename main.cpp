@@ -7,6 +7,8 @@
 #include<cassert>
 #include<dxgidebug.h>
 #include<dxcapi.h>
+#include<math.h>
+#include"makeMatrix.h"
 #include"externals/imugui/imgui.h"
 #include"externals/imugui/imgui_impl_dx12.h"
 #include"externals/imugui/imgui_impl_win32.h"
@@ -22,21 +24,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib,"dxcompiler.lib")
 
 
-struct Vector4
-{
-	float x;
-	float y;
-	float z;
-	float w;
-};
-struct Vector2 {
-	float x;
-	float y;
-};
-struct VertexData {
-	Vector4 position;
-	Vector2 texcoord;
-};
 //ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
@@ -565,7 +552,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//2つ目を作る
 	device->CreateRenderTargetView(swapChainResources[1], &rtvDesc, rtvHandles[1]);
-
+	
 
 	Log("HelloDIrectX!\n");
 
@@ -740,8 +727,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//今回は赤を書き込んでみる
 	*materialData = Vector4(1.0f, 0.0f, 0.0f, 1.0f);
-
-
+	//wvp用のリソースを作る
+	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* wvpData = nullptr;
+	//Matrix4x4* transformationMatrixData = nullptr;
+	//書き込むためのアドレスを取得
+	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+	//単位行列を書き込んでおく
+	*wvpData = MakeIdentity4x4();
+	//*transformationMatrixData = MakeIdentity4x4();
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//リソースの先頭のアドレスから使う
@@ -826,6 +821,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplWin32_Init(hwnd);
 	ImGui_ImplDX12_Init(device, swapChainDesc.BufferCount, rtvDesc.Format,
 		srvDescriptorHeap, srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
+	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 		
@@ -853,6 +850,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		}
 		
+
+		//ゲームの処理
+		transform.rotate.y += 0.03f;
+		Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+		Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
+		*wvpData = worldviewProjectionMatrix;
+
+
 		ImGui::End();
 		
 		//ImGUi内部のコマンドを生成する
@@ -886,9 +894,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//Transitionを張る
 			commandList->ResourceBarrier(1, &barrier);
 
-			//描画先のRTVを設定する
-			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-
+			//描画先のRTVとDSVを設定する
+			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 			//指定した色で画面全体をクリアする
 			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
 			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
@@ -906,8 +915,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			//形状を設定。PSoに設定しているものとはまた別。同じものを設定すると考えておけばいい
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 			//マテリアルCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			//wvp用のCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 			//SRVのDescriptorTableの先頭を設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			
@@ -962,6 +974,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			assert(SUCCEEDED(hr));
 			
 			//ゲーム処理
+
 		}
 	}
 	ImGui_ImplDX12_Shutdown();
@@ -989,7 +1002,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #endif
 	CloseWindow(hwnd);
 
-
+	wvpResource->Release();
 	vertexResource->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
