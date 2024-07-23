@@ -796,15 +796,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
 
 	//2枚目の三角形
-	vertexDataSprite[3].position = { 0.0f,360.0f,0.0f,1.0f };
-	vertexDataSprite[3].texcoord = { 0.0f,1.0f };
-	vertexDataSprite[4].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexDataSprite[4].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
+	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };
+	vertexDataSprite[4].texcoord = { 1.0f,0.0f };
 	vertexDataSprite[5].position = { 640.0f,360.0f,0.0f,1.0f };
 	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
 
 
-
+	//SpriteTransformationMatrix用のリソースを作る
+	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
+	//データを書き込む
+	Matrix4x4* transformationMatrixDataSprite = nullptr;
+	//書き込むためのアドレスを取得
+	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
+	//単位行列を書き込んでく
+	*transformationMatrixDataSprite = MakeIdentity4x4();
 
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
@@ -857,6 +864,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap, srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
+	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 
@@ -894,6 +902,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
 		*wvpData = worldviewProjectionMatrix;
 
+		Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+		Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+		Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+		Matrix4x4 worldviewProjectionMatrixSprite = MatrixMultiply(worldMatrixSprite, MatrixMultiply(viewMatrixSprite, projectionMatrixSprite));
+		*transformationMatrixDataSprite = worldviewProjectionMatrixSprite;
 
 		ImGui::End();
 
@@ -946,7 +959,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootSignature(rootSignature);
 			commandList->SetPipelineState(graphicsPipelineState);//PSOを設定
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
-
 			//形状を設定。PSoに設定しているものとはまた別。同じものを設定すると考えておけばいい
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -956,10 +968,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
 			//SRVのDescriptorTableの先頭を設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(6, 1, 0, 0);
 
+
+
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			
+			//TransformationMatrixCbufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			
+			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
+			
+			commandList->DrawInstanced(6, 1, 0, 0);
 			//
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
@@ -1024,6 +1045,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	srvDescriptorHeap->Release();
 	depthStencilResource->Release();
 	textureResource->Release();
+	transformationMatrixResourceSprite->Release();
 	swapChainResources[0]->Release();
 	swapChainResources[1]->Release();
 	swapChain->Release();
@@ -1042,6 +1064,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	wvpResource->Release();
 	vertexResource->Release();
+	vertexResourceSprite->Release();
 	graphicsPipelineState->Release();
 	signatureBlob->Release();
 	if (errorBlob) {

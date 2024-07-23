@@ -81,6 +81,30 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 	return result;
 }
 
+Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
+	Matrix4x4 matrix = { 0 };
+
+	matrix.m[0][0] = 2.0f / (right - left);
+	matrix.m[0][1] = 0.0f;
+	matrix.m[0][2] = 0.0f;
+	matrix.m[0][3] = 0.0f;
+	matrix.m[1][0] = 0.0f;
+	matrix.m[1][1] = 2.0f / (top - bottom);
+	matrix.m[1][2] = 0.0f;
+	matrix.m[1][3] = 0.0f;
+	matrix.m[2][0] = 0.0f;
+	matrix.m[2][1] = 0.0f;
+	matrix.m[2][2] = 1.0f / (farClip - nearClip);
+	matrix.m[2][3] = 0.0f;
+	matrix.m[3][3] = 1.0f;
+
+	matrix.m[3][0] = (right + left) / (left - right);
+	matrix.m[3][1] = (top + bottom) / (bottom - top);
+	matrix.m[3][2] = nearClip / (nearClip - farClip);
+
+	return matrix;
+}
+
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rot, const Vector3& translate) {
 
 	Matrix4x4 ScallMat, RotateMat, RotateMatX, RotateMatY, RotateMatZ, TranslateMat, returnMat;
