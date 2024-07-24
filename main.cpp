@@ -8,6 +8,7 @@
 #include<dxgidebug.h>
 #include<dxcapi.h>
 #include<math.h>
+
 #include"makeMatrix.h"
 #include"externals/imugui/imgui.h"
 #include"externals/imugui/imgui_impl_dx12.h"
@@ -150,7 +151,7 @@ ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
 
 	//バッファリソース
 	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	vertexResourceDesc.Width = sizeof(VertexData) * 6;
+	vertexResourceDesc.Width = sizeInBytes;
 
 	//バッファの場合はこれらは1にする決まり
 	vertexResourceDesc.Height = 1;
@@ -719,7 +720,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 
 
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData) * 6);
+	const uint32_t kSubdivision = 16;
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData)*(kSubdivision*kSubdivision * 6));
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(VertexData));
 	//	マテリアルにデータを書き込む
 	Vector4* materialData = nullptr;
@@ -742,7 +744,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//使用するリソースのサイズは頂点3つ文のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
+	vertexBufferView.SizeInBytes = sizeof(VertexData)*(kSubdivision*kSubdivision * 6);
 
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
@@ -751,27 +753,83 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	//左下
-	vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
-	//上
-	vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.5f,0.0f };
+	////左下
+	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[0].texcoord = { 0.0f,1.0f };
+	////上
+	//vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
+	//vertexData[1].texcoord = { 0.5f,0.0f };
 
-	//右下
-	vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
+	////右下
+	//vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
+	//vertexData[2].texcoord = { 1.0f,1.0f };
 
-	//左下2
-	vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	vertexData[3].texcoord = { 0.0f,1.0f };
-	//上2
-	vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
-	vertexData[4].texcoord = { 0.5f,0.0f };
+	////左下2
+	//vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
+	//vertexData[3].texcoord = { 0.0f,1.0f };
+	////上2
+	//vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
+	//vertexData[4].texcoord = { 0.5f,0.0f };
 
-	//右下２
-	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	vertexData[5].texcoord = { 1.0f,1.0f };
+	////右下２
+	//vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
+	//vertexData[5].texcoord = { 1.0f,1.0f };
+
+	VertexData a;
+	VertexData b;
+	VertexData c;
+	VertexData d;
+	
+	//経度分割1つ分の角度
+	const float kLonEvery = float( M_PI)*2.0f / float(kSubdivision);
+	//緯度分割1つ分の角度
+	const float kLatEvery = float(M_PI) / float(kSubdivision);
+	//緯度方向に分割
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		float lat = -float(M_PI) / 2.0f + kLatEvery * latIndex;
+		//経度の方向に分割しながら書く
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery;
+			
+			//頂点a
+			a.position.x = cos(lat) * cos(lon);
+			a.position.y = sin(lat);
+			a.position.z = cos(lat) * sin(lon);
+			a.position.w = 1.0f;
+			a.texcoord.x = float(lonIndex) / float(kSubdivision);
+			a.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点b
+			b.position.x = cos(lat+kLatEvery) * cos(lon);
+			b.position.y = sin(lat+kLatEvery);
+			b.position.z = cos(lat+kLatEvery) * sin(lon);
+			b.position.w = 1.0f;
+			b.texcoord.x = float(lonIndex) / float(kSubdivision);
+			b.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点c
+			c.position.x = cos(lat) * cos(lon+kLonEvery);
+			c.position.y = sin(lat);
+			c.position.z = cos(lat) * sin(lon+kLonEvery);
+			c.position.w = 1.0f;
+			c.texcoord.x = float(lonIndex) / float(kSubdivision);
+			c.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点d
+			d.position.x = cos(lat+kLatEvery) * cos(lon+kLonEvery);
+			d.position.y = sin(lat+kLatEvery);
+			d.position.z = cos(lat+kLatEvery) * sin(lon+kLonEvery);
+			d.position.w = 1.0f;
+			d.texcoord.x = float(lonIndex) / float(kSubdivision);
+			d.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点データを入力する
+			vertexData[start] = a;
+			vertexData[start+1] = b;
+			vertexData[start+2] = c;
+			vertexData[start+3] = c;
+			vertexData[start+4] = b;
+			vertexData[start+5] = d;
+		}
+	}
+
 
 	//Sprite用の頂点リソースの作成
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
@@ -863,7 +921,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplDX12_Init(device, swapChainDesc.BufferCount, rtvDesc.Format,
 		srvDescriptorHeap, srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
+	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -969,7 +1027,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//SRVのDescriptorTableの先頭を設定
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
 
 
 
