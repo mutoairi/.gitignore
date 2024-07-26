@@ -21,6 +21,7 @@ struct Vector2 {
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
+	Vector3 normal;
 };
 struct Matrix4x4 {
 	float m[4][4];
@@ -29,6 +30,23 @@ struct Transform {
 	Vector3 scale;
 	Vector3 rotate;
 	Vector3 translate;
+};
+struct TransformationMatrix
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+};
+struct Material
+{
+	Vector4 color;
+	int32_t enableLighting;
+};
+struct DirectionalLight
+{
+	Vector4 color;
+	Vector3 direction;
+	float intensity;
+
 };
 // 行列の掛け算
 Matrix4x4 MatrixMultiply(Matrix4x4 m1, Matrix4x4 m2) {
