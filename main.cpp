@@ -751,6 +751,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//今回は赤を書き込んでみる
 	materialData->color = { Vector4(1.0f, 0.0f, 0.0f, 1.0f) };
 	materialData->enableLighting = true;
+	materialData->uvTransform = MakeIdentity4x4();
 	//wvp用のリソースを作る
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
 	//データを書き込む
@@ -944,6 +945,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//今回は赤を書き込んでみる
 	materialDataSprite->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSprite->enableLighting = false;
+	materialDataSprite->uvTransform = MakeIdentity4x4();
 
 	//平行光源用
 	ID3D12Resource* directionalLightResource = CreateBufferResource(device, sizeof(DirectionalLight));
@@ -1027,6 +1029,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	Transform uvTransformSprite{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f},
+	};
 	bool useMonsterBall = true;
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -1037,6 +1044,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::Begin("WIndow");
 		ImGui::DragFloat3("Color", &materialData->color.x, 0.01f);
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+		ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+		ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+		ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 
 		// カラーパレットを縮小表示するためのflag
 		static bool showColorPicker = false;
@@ -1073,8 +1083,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 worldviewProjectionMatrixSprite = MatrixMultiply(worldMatrixSprite, MatrixMultiply(viewMatrixSprite, projectionMatrixSprite));
 		transformationMatrixDataSprite->WVP = worldviewProjectionMatrixSprite;
 		transformationMatrixDataSprite->World = worldMatrixSprite;
-		ImGui::End();
 
+		//UVTransform用の行列
+		Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+		uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
+		uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
+		materialDataSprite->uvTransform = uvTransformMatrix;
+		ImGui::End();
+		
 		//ImGUi内部のコマンドを生成する
 		ImGui::Render();
 

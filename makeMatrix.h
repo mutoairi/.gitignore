@@ -23,6 +23,9 @@ struct VertexData {
 	Vector2 texcoord;
 	Vector3 normal;
 };
+struct Matrix3x3 {
+	float m[3][3];
+};
 struct Matrix4x4 {
 	float m[4][4];
 };
@@ -40,6 +43,8 @@ struct Material
 {
 	Vector4 color;
 	int32_t enableLighting;
+	float padding[3];
+	Matrix4x4 uvTransform;
 };
 struct DirectionalLight
 {
@@ -121,6 +126,25 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
 	matrix.m[3][2] = nearClip / (nearClip - farClip);
 
 	return matrix;
+}
+
+Matrix4x4 MakeScaleMatrix(Vector3& scale) {
+	Matrix4x4 ScallMat = { 0 };
+	ScallMat = { scale.x, 0, 0, 0, 0, scale.y, 0, 0, 0, 0, scale.z, 0, 0, 0, 0, 1 };
+	return ScallMat;
+}
+
+Matrix4x4 MakeRotateZMatrix(float& rot) {
+	Matrix4x4 RotateMatZ = { 0 };
+	RotateMatZ = { cosf(rot), sinf(rot), 0, 0, -sinf(rot), cosf(rot), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
+	return RotateMatZ;
+}
+
+Matrix4x4 MakeTranslateMatrix(Vector3& translate) {
+	Matrix4x4 TranslateMat = { 0 };
+	// 平行移動行列作成
+	TranslateMat = { 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, translate.x, translate.y, translate.z, 1 };
+	return TranslateMat;
 }
 
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rot, const Vector3& translate) {
