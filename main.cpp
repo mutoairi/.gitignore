@@ -910,6 +910,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
 	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
 
+	
 	//index用のを作る
 	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, (sizeof(uint32_t) * 6));
 	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
@@ -1140,8 +1141,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
 
-			//SRVのDescriptorTableの先頭を設定
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			////IBVを設定
@@ -1150,11 +1150,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			//TransformationMatrixCbufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			//SRVのDescriptorTableの先頭を設定
+			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			//平行光源
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
+			commandList->DrawInstanced(6, 1, 0, 0);
 			//
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
