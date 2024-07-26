@@ -8,6 +8,8 @@
 #include<dxgidebug.h>
 #include<dxcapi.h>
 #include<math.h>
+#include<fstream>
+#include<sstream>
 
 #include"makeMatrix.h"
 #include"externals/imugui/imgui.h"
@@ -24,6 +26,16 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
 
+
+struct MaterialData
+{
+	std::string texturFilePath;
+};
+struct ModelData
+{
+	std::vector<VertexData> vertices;
+	MaterialData material;
+};
 
 //ウィンドウプロシージャ
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
@@ -287,6 +299,91 @@ ID3D12Resource* CreateDepthStencilTextureResource(ID3D12Device* device, int32_t 
 	assert(SUCCEEDED(hr));
 	return resource;
 }
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
+	MaterialData materialData;
+	std::string line;
+
+	std::ifstream file(directoryPath + "/" + filename);
+	assert(file.is_open());
+
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;
+
+		if (identifier == "map_Kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+
+			materialData.texturFilePath = directoryPath + "/" + textureFilename;
+		}
+	}
+	return materialData;
+}
+ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
+	ModelData modelData;
+	std::vector<Vector4> positions;
+	std::vector<Vector3> normals;
+	std::vector<Vector2> texcoords;
+	std::string line;
+
+	std::ifstream file(directoryPath + "/" + filename);
+	assert(file.is_open());
+
+	while (std::getline(file, line)) {
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;
+		if (identifier == "v") {
+			Vector4 position;
+			s >> position.x >> position.y >> position.z;
+			position.x *= -1.0f;
+			position.w = 1.0f;
+			positions.push_back(position);
+		}else if(identifier=="vt"){
+			Vector2 texcoord;
+			s >> texcoord.x >> texcoord.y;
+			texcoord.y = 1.0f - texcoord.y;
+			texcoords.push_back(texcoord);
+		}else if(identifier=="vn") {
+			Vector3 normal;
+			s >> normal.x >> normal.y >> normal.z;
+			normal.x *= -1.0f;
+			normals.push_back(normal);
+		}else if (identifier == "f") {
+
+			VertexData triangle[3];
+			for (uint32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
+				std::string vertexDefinition;
+				s >> vertexDefinition;
+
+				std::istringstream v(vertexDefinition);
+				uint32_t elementIndices[3];
+				for (int32_t element = 0; element < 3; ++element) {
+					std::string index;
+					std::getline(v, index, '/');
+					elementIndices[element] = std::stoi(index);
+
+				}
+				Vector4 position = positions[elementIndices[0] - 1];
+				Vector2 texcoord = texcoords[elementIndices[1] - 1];
+				Vector3 normal = normals[elementIndices[2] - 1];
+				
+				triangle[faceVertex] = { position,texcoord,normal };
+			}
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
+		}
+		else if (identifier == "mtllib") {
+			std::string materialFilename;
+			s >> materialFilename;
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+		}
+	}
+	return modelData;
+}
+
 
 //Windowsアプリでのエントリーポイント(main関数)
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
@@ -741,8 +838,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 
 
-	const uint32_t kSubdivision = 16;
-	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData)*(kSubdivision*kSubdivision * 6));
+	//const uint32_t kSubdivision = 16;
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	ID3D12Resource* vertexResource = CreateBufferResource(device, sizeof(VertexData)*modelData.vertices.size());
 	ID3D12Resource* materialResource = CreateBufferResource(device, sizeof(Material));
 	//	マテリアルにデータを書き込む
 	Material* materialData = nullptr;
@@ -768,7 +866,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//リソースの先頭のアドレスから使う
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
 	//使用するリソースのサイズは頂点3つ文のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData)*(kSubdivision*kSubdivision * 6);
+	vertexBufferView.SizeInBytes =UINT( sizeof(VertexData)*modelData.vertices.size());
 
 	//1頂点当たりのサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
@@ -777,101 +875,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	VertexData* vertexData = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	////左下
-	//vertexData[0].position = { -0.5f,-0.5f,0.0f,1.0f };
-	//vertexData[0].texcoord = { 0.0f,1.0f };
-	////上
-	//vertexData[1].position = { 0.0f,0.5f,0.0f,1.0f };
-	//vertexData[1].texcoord = { 0.5f,0.0f };
-
-	////右下
-	//vertexData[2].position = { 0.5f,-0.5f,0.0f,1.0f };
-	//vertexData[2].texcoord = { 1.0f,1.0f };
-
-	////左下2
-	//vertexData[3].position = { -0.5f,-0.5f,0.5f,1.0f };
-	//vertexData[3].texcoord = { 0.0f,1.0f };
-	////上2
-	//vertexData[4].position = { 0.0f,0.0f,0.0f,1.0f };
-	//vertexData[4].texcoord = { 0.5f,0.0f };
-
-	////右下２
-	//vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
-	//vertexData[5].texcoord = { 1.0f,1.0f };
-
-	VertexData a;
-	VertexData b;
-	VertexData c;
-	VertexData d;
-	
-	//経度分割1つ分の角度
-	const float kLonEvery = float( M_PI)*2.0f / float(kSubdivision);
-	//緯度分割1つ分の角度
-	const float kLatEvery = float(M_PI) / float(kSubdivision);
-	//緯度方向に分割
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -float(M_PI) / 2.0f + kLatEvery * latIndex;
-		//経度の方向に分割しながら書く
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;
-			
-			//頂点a
-			a.position.x = cos(lat) * cos(lon);
-			a.position.y = sin(lat);
-			a.position.z = cos(lat) * sin(lon);
-			a.position.w = 1.0f;
-			a.texcoord.x = float(lonIndex) / float(kSubdivision);
-			a.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
-			//頂点b
-			b.position.x = cos(lat+kLatEvery) * cos(lon);
-			b.position.y = sin(lat+kLatEvery);
-			b.position.z = cos(lat+kLatEvery) * sin(lon);
-			b.position.w = 1.0f;
-			b.texcoord.x = float(lonIndex) / float(kSubdivision);
-			b.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
-			//頂点c
-			c.position.x = cos(lat) * cos(lon+kLonEvery);
-			c.position.y = sin(lat);
-			c.position.z = cos(lat) * sin(lon+kLonEvery);
-			c.position.w = 1.0f;
-			c.texcoord.x = float(lonIndex) / float(kSubdivision);
-			c.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
-			//頂点d
-			d.position.x = cos(lat+kLatEvery) * cos(lon+kLonEvery);
-			d.position.y = sin(lat+kLatEvery);
-			d.position.z = cos(lat+kLatEvery) * sin(lon+kLonEvery);
-			d.position.w = 1.0f;
-			d.texcoord.x = float(lonIndex) / float(kSubdivision);
-			d.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
-			//頂点データを入力する
-			vertexData[start] = a;
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
-			vertexData[start+1] = b;
-			vertexData[start+1].normal.x = vertexData[start+1].position.x;
-			vertexData[start+1].normal.y = vertexData[start+1].position.y;
-			vertexData[start+1].normal.z = vertexData[start+1].position.z;
-			vertexData[start+2] = c;
-			vertexData[start+2].normal.x = vertexData[start+2].position.x;
-			vertexData[start+2].normal.y = vertexData[start+2].position.y;
-			vertexData[start+2].normal.z = vertexData[start+2].position.z;
-			vertexData[start+3] = c;
-			vertexData[start+3].normal.x = vertexData[start+3].position.x;
-			vertexData[start+3].normal.y = vertexData[start+3].position.y;
-			vertexData[start+3].normal.z = vertexData[start+3].position.z;
-			vertexData[start+4] = b;
-			vertexData[start+4].normal.x = vertexData[start+4].position.x;
-			vertexData[start+4].normal.y = vertexData[start+4].position.y;
-			vertexData[start+4].normal.z = vertexData[start+4].position.z;
-			vertexData[start+5] = d;
-			vertexData[start+5].normal.x = vertexData[start+5].position.x;
-			vertexData[start+5].normal.y = vertexData[start+5].position.y;
-			vertexData[start+5].normal.z = vertexData[start+5].position.z;
-
-		}
-	}
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
 
 	
 
@@ -963,7 +967,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	UploadTextureData(textureResource, mipImages);
 
 	//2枚目のTextureを読んで転送する
-	DirectX::ScratchImage mipImages2 = LoadTexture("resources/monsterBall.png");
+	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.texturFilePath);
 	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 	ID3D12Resource* textureResource2 = CreateTextureResource(device, metadata2);
 	UploadTextureData(textureResource2, mipImages2);
@@ -1155,7 +1159,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
 			
 
@@ -1269,6 +1273,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialResource->Release();
 	materialResourceSprite->Release();
 	indexResourceSprite->Release();
+	
 
 
 	//リソースリークチェック
