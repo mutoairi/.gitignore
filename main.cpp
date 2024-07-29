@@ -819,21 +819,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			b.position.z = cos(lat+kLatEvery) * sin(lon);
 			b.position.w = 1.0f;
 			b.texcoord.x = float(lonIndex) / float(kSubdivision);
-			b.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			b.texcoord.y = 1.0f - float(latIndex+1) / float(kSubdivision);
 			//頂点c
 			c.position.x = cos(lat) * cos(lon+kLonEvery);
 			c.position.y = sin(lat);
 			c.position.z = cos(lat) * sin(lon+kLonEvery);
 			c.position.w = 1.0f;
-			c.texcoord.x = float(lonIndex) / float(kSubdivision);
+			c.texcoord.x = float(lonIndex+1) / float(kSubdivision);
 			c.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
 			//頂点d
 			d.position.x = cos(lat+kLatEvery) * cos(lon+kLonEvery);
 			d.position.y = sin(lat+kLatEvery);
 			d.position.z = cos(lat+kLatEvery) * sin(lon+kLonEvery);
 			d.position.w = 1.0f;
-			d.texcoord.x = float(lonIndex) / float(kSubdivision);
-			d.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			d.texcoord.x = float(lonIndex+1) / float(kSubdivision);
+			d.texcoord.y = 1.0f - float(latIndex+1) / float(kSubdivision);
 			//頂点データを入力する
 			vertexData[start] = a;
 			vertexData[start+1] = b;
