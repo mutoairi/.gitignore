@@ -1279,13 +1279,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResource->Release();
 	vertexResourceSprite->Release();
 	graphicsPipelineState->Release();*/
-	signatureBlob->Release();
+	/*signatureBlob->Release();
 	if (errorBlob) {
 		errorBlob->Release();
-	}
+	}*/
 	//rootSignature->Release();
-	pixelShaderBlob->Release();
-	vertexShaderBlob->Release();
+	//pixelShaderBlob->Release();
+	//vertexShaderBlob->Release();
 	/*materialResource->Release();
 	materialResourceSprite->Release();
 	indexResourceSprite->Release();*/
