@@ -358,6 +358,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 		}else if(identifier=="vt"){
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
+			texcoord.x = 1.0f - texcoord.x;
 			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
 		}else if(identifier=="vn") {
@@ -383,7 +384,8 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector4 position = positions[elementIndices[0] - 1];
 				Vector2 texcoord = texcoords[elementIndices[1] - 1];
 				Vector3 normal = normals[elementIndices[2] - 1];
-				
+				VertexData vertex = { position,texcoord,normal };
+				modelData.vertices.push_back(vertex);
 				triangle[faceVertex] = { position,texcoord,normal };
 			}
 			modelData.vertices.push_back(triangle[2]);
@@ -863,8 +865,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//今回は赤を書き込んでみる
-	materialData->color = { Vector4(1.0f, 0.0f, 0.0f, 1.0f) };
-	materialData->enableLighting = true;
+	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	//materialData->enableLighting = true;
 	materialData->uvTransform = MakeIdentity4x4();
 	//wvp用のリソースを作る
 	Microsoft::WRL::ComPtr < ID3D12Resource> wvpResource = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
@@ -1063,6 +1065,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::NewFrame();
 		ImGui::Begin("WIndow");
 		ImGui::DragFloat3("Color", &materialData->color.x, 0.01f);
+		ImGui::SliderAngle("SpherRotate", &transform.rotate.y);
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
 		ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
@@ -1088,7 +1091,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		//ゲームの処理
-		transform.rotate.y += 0.03f;
+		
 		Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
