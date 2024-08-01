@@ -1271,7 +1271,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #ifdef  _DEBUG
-	debugController->Release();
+	//debugController->Release();
 #endif*/
 	CloseWindow(hwnd);
 
