@@ -876,6 +876,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//Sprite用の頂点リソースの作成
 	ID3D12Resource* vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
+	//index用のを作る
+	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, (sizeof(uint32_t) * 6));
 	//頂点バッファビューを作成
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{};
 	//リソースの先頭のアドレスから使う
@@ -911,11 +913,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
 
 	
-	//index用のを作る
-	ID3D12Resource* indexResourceSprite = CreateBufferResource(device, (sizeof(uint32_t) * 6));
+	
 	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
 	indexBufferViewSprite.BufferLocation = indexResourceSprite->GetGPUVirtualAddress();
-	indexBufferViewSprite.SizeInBytes = (sizeof(uint32_t) * 6);
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
 	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
 	uint32_t* indexDataSprite = nullptr;
 	indexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
@@ -1156,7 +1157,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 			//
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList);
 
