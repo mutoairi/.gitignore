@@ -1194,66 +1194,66 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 		ImGui::Begin("Setting");
-		
-			if (ImGui::CollapsingHeader("OBJ")) {
+		if (ImGui::BeginTabBar("OBJ"))
+		{
+			if (ImGui::BeginTabItem("OBJ")) {
 				ImGui::DragFloat3("Scale:", &transform.scale.x, 0.01f);
 				ImGui::DragFloat3("Rotate:", &transform.rotate.x, 0.01f);
 				ImGui::DragFloat3("Translate:", &transform.translate.x, 0.01f);
-				ImGui::DragFloat3("Shadow", &directionalLightData->direction.x, 0.01f, -1.0f, 1.0f);
-				ImGui::ColorEdit4("Color", &directionalLightData->color.x);
-				ImGui::DragFloat("IntenCity", &directionalLightData->intensity);
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("Sphere"))
+			{
+				ImGui::ColorEdit4("Color", &materialDataSphere->color.x);
+
+				ImGui::DragFloat3("Scale", &transformSphere.scale.x, 0.01f);
+				ImGui::DragFloat3("Rotate", &transformSphere.rotate.x, -180.0f, 180.0f);
+				ImGui::DragFloat3("Translate", &transformSphere.translate.x, 0.01f);
+				ImGui::DragFloat3("Direction", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
+				ImGui::ColorEdit4("Color", &directionalLightDataSphere->color.x);
+				ImGui::DragFloat("IntenCity", &directionalLightDataSphere->intensity);
 				if (ImGui::Button("Lighting")) {
-					if (materialData->enableLighting) {
-						materialData->enableLighting = 0;
+					if (materialDataSphere->enableLighting == 1) {
+						materialDataSphere->enableLighting = 0;
 					}
-					else if (!materialData->enableLighting) {
-						materialData->enableLighting = 1;
+					else if (!materialDataSphere->enableLighting) {
+						materialDataSphere->enableLighting = 1;
 					}
-				}if (ImGui::Button("HalfLambert")) {
-					
-						materialData->enableLighting = 2;
-					
 				}
-					
-				
-			}
-	
-		if (ImGui::CollapsingHeader("Sphere"))
-		{
-			ImGui::ColorEdit4("Color", &materialDataSphere->color.x);
-			ImGui::DragFloat3("Scale", &transformSphere.scale.x, 0.01f);
-			ImGui::DragFloat3("Rotate", &transformSphere.rotate.x, 0.01f);
-			ImGui::DragFloat3("Translate", &transformSphere.translate.x, 0.01f);
-			ImGui::DragFloat3("Direction", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
-			ImGui::ColorEdit4("Color", &directionalLightDataSphere->color.x);
-			ImGui::DragFloat("IntenCity", &directionalLightDataSphere->intensity);
-			if (ImGui::Button("Lighting")) {
-				if (materialDataSphere->enableLighting) {
-					materialDataSphere->enableLighting = 0;
-				}
-				else if (!materialDataSphere->enableLighting) {
-					materialDataSphere->enableLighting = 1;
-				}
-			}
-			if (ImGui::Button("HalfLambert")) {
-				
-					materialDataSphere->enableLighting = 2;
-				
+				if (ImGui::Button("HalfLambert")) {
 
+					if (materialDataSphere->enableLighting == 2) {
+						materialDataSphere->enableLighting = 0;
+					}
+					else if (!materialDataSphere->enableLighting) {
+						materialDataSphere->enableLighting = 2;
+					}
+
+
+				}
+				ImGui::EndTabItem();
 			}
-			
+
+			if (ImGui::BeginTabItem("Sprite")) {
+
+				ImGui::ColorEdit4("Color", &materialDataSprite->color.x);
+				ImGui::DragFloat3("Scale", &transformSprite.scale.x, 0.01f);
+				ImGui::DragFloat3("Rotate", &transformSprite.rotate.x, 0.01f);
+				ImGui::DragFloat3("Translate", &transformSprite.translate.x, 0.01f);
+
+				ImGui::EndTabItem();
+			}
+
+			if (ImGui::BeginTabItem("UV")) {
+
+				ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+				ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+				ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabItem();
 		}
-
-		if (ImGui::CollapsingHeader("Sprite"))
-		{
-			ImGui::ColorEdit4("Color", &materialDataSprite->color.x);
-			ImGui::DragFloat3("Scale", &transformSprite.scale.x, 0.01f);
-			ImGui::DragFloat3("Rotate", &transformSprite.rotate.x, 0.01f);
-			ImGui::DragFloat3("Translate", &transformSprite.translate.x, 0.01f);
-		
-			
-		}
-
 		//ゲームの処理
 
 		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
