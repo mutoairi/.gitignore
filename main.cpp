@@ -1208,7 +1208,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				ImGui::ColorEdit4("Color", &materialDataSphere->color.x);
 
 				ImGui::DragFloat3("Scale", &transformSphere.scale.x, 0.01f);
-				ImGui::DragFloat3("Rotate", &transformSphere.rotate.x, -180.0f, 180.0f);
+				ImGui::DragFloat3("Rotate", &transformSphere.rotate.x, -1.0f, 1.0f);
 				ImGui::DragFloat3("Translate", &transformSphere.translate.x, 0.01f);
 				ImGui::DragFloat3("Direction", &directionalLightDataSphere->direction.x, 0.01f, -1.0f, 1.0f);
 				ImGui::ColorEdit4("Color", &directionalLightDataSphere->color.x);
@@ -1240,7 +1240,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				ImGui::ColorEdit4("Color", &materialDataSprite->color.x);
 				ImGui::DragFloat3("Scale", &transformSprite.scale.x, 0.01f);
 				ImGui::DragFloat3("Rotate", &transformSprite.rotate.x, 0.01f);
-				ImGui::DragFloat3("Translate", &transformSprite.translate.x, 0.01f);
+				ImGui::DragFloat3("Translate", &transformSprite.translate.x, 1.0f,1.0f,1.0f);
 
 				ImGui::EndTabItem();
 			}
