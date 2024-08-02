@@ -857,29 +857,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	assert(SUCCEEDED(hr));
 
 
-	//const uint32_t kSubdivision = 16;
+	
+	// 
+	//----------OBJ-------------------------------------------------
+	//
+
 	ModelData modelData = LoadObjFile("resources", "plane.obj");
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = CreateBufferResource(device.Get(), sizeof(VertexData) * modelData.vertices.size());
-	Microsoft::WRL::ComPtr < ID3D12Resource> materialResource = CreateBufferResource(device.Get(), sizeof(Material));
-	//	マテリアルにデータを書き込む
-	Material* materialData = nullptr;
-	//書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	//今回は赤を書き込んでみる
-	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-	materialData->enableLighting = true;
-	materialData->uvTransform = MakeIdentity4x4();
-	//wvp用のリソースを作る
-	Microsoft::WRL::ComPtr < ID3D12Resource> wvpResource = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* wvpData = nullptr;
-	//Matrix4x4* transformationMatrixData = nullptr;
-	//書き込むためのアドレスを取得
-	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-	//単位行列を書き込んでおく
-	wvpData->WVP = MakeIdentity4x4();
-	wvpData->World = MakeIdentity4x4();
-	//*transformationMatrixData = MakeIdentity4x4();
+	
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//リソースの先頭のアドレスから使う
@@ -895,8 +880,161 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
-
 	
+	//-------------wvp用のリソースを作る--------
+	Microsoft::WRL::ComPtr < ID3D12Resource> wvpResource = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
+	//データを書き込む
+	TransformationMatrix* wvpData = nullptr;
+	//Matrix4x4* transformationMatrixData = nullptr;
+	//書き込むためのアドレスを取得
+	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+	//単位行列を書き込んでおく
+	wvpData->WVP = MakeIdentity4x4();
+	wvpData->World = MakeIdentity4x4();
+
+	//マテリアルリソース
+	Microsoft::WRL::ComPtr < ID3D12Resource> materialResource = CreateBufferResource(device.Get(), sizeof(Material));
+	//	マテリアルにデータを書き込む
+	Material* materialData = nullptr;
+	//書き込むためのアドレスを取得
+	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	//今回は赤を書き込んでみる
+	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	materialData->enableLighting = 0;
+	materialData->uvTransform = MakeIdentity4x4();
+
+	//
+	//----------------Sphere----------------------------------------------------------
+	// 
+	const uint32_t kSubdivision = 16;
+
+
+	//vertexResource
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSphere = CreateBufferResource(device, sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+
+	//頂点バッファビューを作成する
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSphere{};
+	//リソースの先頭のアドレスから使う
+	vertexBufferViewSphere.BufferLocation = vertexResourceSphere->GetGPUVirtualAddress();
+	//使用するリソースのサイズは頂点3つ文のサイズ
+	vertexBufferViewSphere.SizeInBytes = UINT(sizeof(VertexData) * kSubdivision * kSubdivision * 6);
+
+	//1頂点当たりのサイズ
+	vertexBufferViewSphere.StrideInBytes = sizeof(VertexData);
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSphere));
+
+	VertexData a;
+	VertexData b;
+	VertexData c;
+	VertexData d;
+
+	//経度分割1つ分の角度
+	const float kLonEvery = float(M_PI) * 2.0f / float(kSubdivision);
+	//緯度分割1つ分の角度
+	const float kLatEvery = float(M_PI) / float(kSubdivision);
+	//緯度方向に分割
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+		float lat = -float(M_PI) / 2.0f + kLatEvery * latIndex;
+		//経度の方向に分割しながら書く
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery;
+
+			//頂点a
+			a.position.x = cos(lat) * cos(lon);
+			a.position.y = sin(lat);
+			a.position.z = cos(lat) * sin(lon);
+			a.position.w = 1.0f;
+			a.texcoord.x = float(lonIndex) / float(kSubdivision);
+			a.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点b
+			b.position.x = cos(lat + kLatEvery) * cos(lon);
+			b.position.y = sin(lat + kLatEvery);
+			b.position.z = cos(lat + kLatEvery) * sin(lon);
+			b.position.w = 1.0f;
+			b.texcoord.x = float(lonIndex) / float(kSubdivision);
+			b.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点c
+			c.position.x = cos(lat) * cos(lon + kLonEvery);
+			c.position.y = sin(lat);
+			c.position.z = cos(lat) * sin(lon + kLonEvery);
+			c.position.w = 1.0f;
+			c.texcoord.x = float(lonIndex) / float(kSubdivision);
+			c.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点d
+			d.position.x = cos(lat + kLatEvery) * cos(lon + kLonEvery);
+			d.position.y = sin(lat + kLatEvery);
+			d.position.z = cos(lat + kLatEvery) * sin(lon + kLonEvery);
+			d.position.w = 1.0f;
+			d.texcoord.x = float(lonIndex) / float(kSubdivision);
+			d.texcoord.y = 1.0f - float(latIndex) / float(kSubdivision);
+			//頂点データを入力する
+			vertexDataSphere[start] = a;
+			vertexDataSphere[start].normal.x = vertexDataSphere[start].position.x;
+			vertexDataSphere[start].normal.y = vertexDataSphere[start].position.y;
+			vertexDataSphere[start].normal.z = vertexDataSphere[start].position.z;
+			vertexDataSphere[start + 1] = b;
+			vertexDataSphere[start + 1].normal.x = vertexDataSphere[start + 1].position.x;
+			vertexDataSphere[start + 1].normal.y = vertexDataSphere[start + 1].position.y;
+			vertexDataSphere[start + 1].normal.z = vertexDataSphere[start + 1].position.z;
+			vertexDataSphere[start + 2] = c;
+			vertexDataSphere[start + 2].normal.x = vertexDataSphere[start + 2].position.x;
+			vertexDataSphere[start + 2].normal.y = vertexDataSphere[start + 2].position.y;
+			vertexDataSphere[start + 2].normal.z = vertexDataSphere[start + 2].position.z;
+			vertexDataSphere[start + 3] = c;
+			vertexDataSphere[start + 3].normal.x = vertexDataSphere[start + 3].position.x;
+			vertexDataSphere[start + 3].normal.y = vertexDataSphere[start + 3].position.y;
+			vertexDataSphere[start + 3].normal.z = vertexDataSphere[start + 3].position.z;
+			vertexDataSphere[start + 4] = b;
+			vertexDataSphere[start + 4].normal.x = vertexDataSphere[start + 4].position.x;
+			vertexDataSphere[start + 4].normal.y = vertexDataSphere[start + 4].position.y;
+			vertexDataSphere[start + 4].normal.z = vertexDataSphere[start + 4].position.z;
+			vertexDataSphere[start + 5] = d;
+			vertexDataSphere[start + 5].normal.x = vertexDataSphere[start + 5].position.x;
+			vertexDataSphere[start + 5].normal.y = vertexDataSphere[start + 5].position.y;
+			vertexDataSphere[start + 5].normal.z = vertexDataSphere[start + 5].position.z;
+
+		}
+	}
+
+	//wvp用のリソースを作る
+	Microsoft::WRL::ComPtr < ID3D12Resource> wvpSphereResource = CreateBufferResource(device.Get(), sizeof(TransformationMatrix));
+	//データを書き込む
+	TransformationMatrix* wvpSphereData = nullptr;
+	//Matrix4x4* transformationMatrixData = nullptr;
+	//書き込むためのアドレスを取得
+	wvpSphereResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpSphereData));
+	//単位行列を書き込んでおく
+	wvpSphereData->WVP = MakeIdentity4x4();
+	wvpSphereData->World = MakeIdentity4x4();
+
+	//マテリアルリソース
+	Microsoft::WRL::ComPtr < ID3D12Resource> materialResourceSphere = CreateBufferResource(device.Get(), sizeof(Material));
+	//	マテリアルにデータを書き込む
+	Material* materialDataSphere = nullptr;
+	//書き込むためのアドレスを取得
+	materialResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSphere));
+	//今回は赤を書き込んでみる
+	materialDataSphere->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	materialDataSphere->enableLighting = 0;
+	materialDataSphere->uvTransform = MakeIdentity4x4();
+
+	//平行光源用
+	Microsoft::WRL::ComPtr <ID3D12Resource> directionalLightResourceSphere = CreateBufferResource(device, sizeof(DirectionalLight));
+	DirectionalLight* directionalLightDataSphere = nullptr;
+	directionalLightResourceSphere->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightDataSphere));
+	directionalLightDataSphere->color = { 1.0f,1.0f,1.0f,1.0f };
+	directionalLightDataSphere->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightDataSphere->intensity = 1.0f;
+
+	//------------------------------------------------------------
+
+	//
+	//---------Sprite---------------------------------------------
+	//
 
 	//Sprite用の頂点リソースの作成
 	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResourceSprite = CreateBufferResource(device.Get(), sizeof(VertexData) * 6);
@@ -963,6 +1101,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialDataSprite->enableLighting = false;
 	materialDataSprite->uvTransform = MakeIdentity4x4();
 
+	
 	//平行光源用
 	Microsoft::WRL::ComPtr < ID3D12Resource> directionalLightResource = CreateBufferResource(device.Get(), sizeof(DirectionalLight));
 	DirectionalLight* directionalLightData = nullptr;
@@ -971,6 +1110,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->direction = { 0.0f,-1.0f,1.0f };
 	directionalLightData->intensity = 1.0f;
 
+	//-----------------------------------------------------------------------
 	
 	//Textureを読んで転送する
 	DirectX::ScratchImage mipImages = LoadTexture("resources/uvChecker.png");
@@ -1045,6 +1185,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	Transform transformSphere{ { 1.0f, 1.0f, 1.0f },{ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 0.0f  } };
 	Transform uvTransformSprite{
 		{1.0f,1.0f,1.0f},
 		{0.0f,0.0f,0.0f},
@@ -1096,6 +1237,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
 		wvpData->WVP = worldviewProjectionMatrix;
 		wvpData->World = worldMatrix;
+
+
+		Matrix4x4 worldMatrixSphere = MakeAffineMatrix(transformSphere.scale, transformSphere.rotate, transformSphere.translate);
+		Matrix4x4 projectionMatrixSphere = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+		Matrix4x4 worldviewProjectionMatrixSphere = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrixSphere));
+		wvpSphereData->WVP = worldviewProjectionMatrixSphere;
+		wvpSphereData->World = worldMatrixSphere;
 
 		Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
 		Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
@@ -1161,23 +1309,41 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//RootSignatureを設定。PSOに設定しているけど別途設定が必要
 			commandList->SetGraphicsRootSignature(rootSignature.Get());
 			commandList->SetPipelineState(graphicsPipelineState.Get());//PSOを設定
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
 			//形状を設定。PSoに設定しているものとはまた別。同じものを設定すると考えておけばいい
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+			//
+			///---------Sphere----------------------------------------------------------
+			//
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSphere);//VBVを設定
+			//マテリアルCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSphere->GetGPUVirtualAddress());
+			//wvp用のCBufferの場所を設定
+			commandList->SetGraphicsRootConstantBufferView(1, wvpSphereResource->GetGPUVirtualAddress());
+			//SRVのDescriptorTableの先頭を設定
+			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+			//平行光源
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResourceSphere->GetGPUVirtualAddress());
+
+			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
+			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
+			
+
+			//
+			///----------OBJ-----------------------------------------------------------
+			//
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
 			//マテリアルCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-			//SRVのDescriptorTableの先頭を設定
-			commandList->SetGraphicsRootDescriptorTable(2,useMonsterBall? textureSrvHandleGPU2:textureSrvHandleGPU);
 			//平行光源
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
-			
+			//-------------------------------------------------------------------------
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			////IBVを設定
