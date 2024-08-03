@@ -46,7 +46,7 @@ struct D3DResourceLeakChecker
 			debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
 			debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
 			debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-			//debug->Release();
+			
 		}
 	}
 };
@@ -162,8 +162,7 @@ IDxcBlob* CompileShader(
 	//成功したログを出す
 	Log(ConvertString(std::format(L"Compile Succeeded,path:{},profile:{}\n", filePath, profile)));
 	//もう使わないリソースを解放
-	//shaderSource->Release();
-	//shaderResult->Release();
+	
 	//実行用のバイナリを返却
 	return shaderBlob;
 }
@@ -578,7 +577,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		infoQueue->PushStorageFilter(&filter);
 
 		//解放
-		//infoQueue->Release();
+		
 	}
 #endif
 
@@ -1250,56 +1249,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	CoUninitialize();
 	//解放処理
 	CloseHandle(fenceEvent);
-	////fence->Release();
-	//dsvDescriptorHeap->Release();
-	//rtvDescriptorHeap->Release();
-	//srvDescriptorHeap->Release();
-	//directionalLightResource->Release();
-	//depthStencilResource->Release();
-	//textureResource->Release();
-	//textureResource2->Release();
-	//transformationMatrixResourceSprite->Release();
-	//swapChainResources[0]->Release();
-	//swapChainResources[1]->Release();
-	//swapChain->Release();
-	//commandList->Release();
-	//commandAllocator->Release();
-	//commandQueue->Release();
-	//device->Release();
-	//useAdapter->Release();
-	//dxgiFactory->Release();
-
-
-#ifdef  _DEBUG
-	//debugController->Release();
-#endif*/
-	CloseWindow(hwnd);
-
-	/*wvpResource->Release();
-	vertexResource->Release();
-	vertexResourceSprite->Release();
-	graphicsPipelineState->Release();*/
-	/*signatureBlob->Release();
-	if (errorBlob) {
-		errorBlob->Release();
-	}*/
-	//rootSignature->Release();
-	//pixelShaderBlob->Release();
-	//vertexShaderBlob->Release();
-	/*materialResource->Release();
-	materialResourceSprite->Release();
-	indexResourceSprite->Release();*/
 	
 
 
-	////リソースリークチェック
-	//Microsoft::WRL::ComPtr < IDXGIDebug1> debug;
-	//if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-	//	debug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_ALL);
-	//	debug->ReportLiveObjects(DXGI_DEBUG_APP, DXGI_DEBUG_RLO_ALL);
-	//	debug->ReportLiveObjects(DXGI_DEBUG_D3D12, DXGI_DEBUG_RLO_ALL);
-	//	//debug->Release();
-	//}
+#ifdef  _DEBUG
+	
+#endif
+	CloseWindow(hwnd);
+
+
+
 
 	return 0;
 }
