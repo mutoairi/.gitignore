@@ -11,6 +11,7 @@
 #include<fstream>
 #include<sstream>
 #include<wrl.h>
+#include"Input.h"
 
 #include"makeMatrix.h"
 #include"externals/imugui/imgui.h"
@@ -658,6 +659,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	hr = swapChain->GetBuffer(1, IID_PPV_ARGS(&swapChainResources[1]));
 	assert(SUCCEEDED(hr));
 
+	//ポインタ
+	Input* input = nullptr;
+	
+	//入力の初期化
+	input = new Input();
+	input->Initialize(wc.hInstance,hwnd);
+
 	//RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	rtvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;//出力結果をSRGBに変換して書き込む
@@ -1250,8 +1258,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//解放処理
 	CloseHandle(fenceEvent);
 	
-
-
+	//入力解放
+	delete input;
+	//
 #ifdef  _DEBUG
 	
 #endif

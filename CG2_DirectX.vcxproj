@@ -159,6 +159,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imugui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imugui\imgui_tables.cpp" />
     <ClCompile Include="externals\imugui\imgui_widgets.cpp" />
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +171,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imugui\imstb_rectpack.h" />
     <ClInclude Include="externals\imugui\imstb_textedit.h" />
     <ClInclude Include="externals\imugui\imstb_truetype.h" />
+    <ClInclude Include="Input.h" />
     <ClInclude Include="makeMatrix.h" />
   </ItemGroup>
   <ItemGroup>
