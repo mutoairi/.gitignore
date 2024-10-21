@@ -15,9 +15,11 @@ public:
 public :
 	void Initialize(HINSTANCE,HWND);
 	void Update();
+	bool PushKey(BYTE );
 private:
 	
 	
 	ComPtr<IDirectInputDevice8> keyboard;
+	BYTE key[256] = {};
 };
 
