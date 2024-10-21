@@ -6,12 +6,18 @@
 
 class Input
 {
+public:
+   //namespace省略
+	template<class T>using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+
+
 public :
 	void Initialize(HINSTANCE,HWND);
 	void Update();
 private:
 	
-	Microsoft::WRL::ComPtr<IDirectInput8>directInput = nullptr;
-	Microsoft::WRL::ComPtr<IDirectInputDevice8> keyboard;
+	
+	ComPtr<IDirectInputDevice8> keyboard;
 };
 

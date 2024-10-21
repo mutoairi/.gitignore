@@ -1061,66 +1061,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-		ImGui::Begin("WIndow");
-		ImGui::DragFloat3("Color", &materialData->color.x, 0.01f);
-		ImGui::SliderAngle("SpherRotate", &transform.rotate.y);
-		ImGui::DragFloat3("LightingColor",&directionalLightData->color.x,0.01f);
-		ImGui::DragFloat3("LightingDir", &directionalLightData->direction.x, 0.01f);
-		ImGui::DragFloat("lightinyencity", &directionalLightData->intensity,0.01f);
-		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-		ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-		ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-		ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
-
-		// カラーパレットを縮小表示するためのflag
-		static bool showColorPicker = false;
-
-		// カラーパレットの縮小表示
-		if (!showColorPicker)
-		{
-			if (ImGui::Button("color palette"))
-				showColorPicker = true;
-		}
-
-		// カラーパレットの拡大表示
-		if (showColorPicker)
-		{
-			ImGui::ColorPicker4("Color", (float*)&materialData->color.x, ImGuiColorEditFlags_Float);
-
-
-		}
-
-
-		//ゲームの処理
 		
-		Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
-		Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
-		Matrix4x4 viewMatrix = Inverse(cameraMatrix);
-		Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
-		Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
-		wvpData->WVP = worldviewProjectionMatrix;
-		wvpData->World = worldMatrix;
-
-		Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
-		Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-		Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
-		Matrix4x4 worldviewProjectionMatrixSprite = MatrixMultiply(worldMatrixSprite, MatrixMultiply(viewMatrixSprite, projectionMatrixSprite));
-		transformationMatrixDataSprite->WVP = worldviewProjectionMatrixSprite;
-		transformationMatrixDataSprite->World = worldMatrixSprite;
-
-		//UVTransform用の行列
-		Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
-		uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
-		uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
-		materialDataSprite->uvTransform = uvTransformMatrix;
-		ImGui::End();
-		
-		//ImGUi内部のコマンドを生成する
-		ImGui::Render();
-
 
 		//windowにメッセージが来てたら最優先で処理させる
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -1128,6 +1069,72 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			DispatchMessage(&msg);
 		}
 		else {
+
+			//入力更新
+			input->Update();
+
+
+
+			ImGui_ImplDX12_NewFrame();
+			ImGui_ImplWin32_NewFrame();
+			ImGui::NewFrame();
+			ImGui::Begin("WIndow");
+			ImGui::DragFloat3("Color", &materialData->color.x, 0.01f);
+			ImGui::SliderAngle("SpherRotate", &transform.rotate.y);
+			ImGui::DragFloat3("LightingColor", &directionalLightData->color.x, 0.01f);
+			ImGui::DragFloat3("LightingDir", &directionalLightData->direction.x, 0.01f);
+			ImGui::DragFloat("lightinyencity", &directionalLightData->intensity, 0.01f);
+			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+			ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
+			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
+			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
+
+			// カラーパレットを縮小表示するためのflag
+			static bool showColorPicker = false;
+
+			// カラーパレットの縮小表示
+			if (!showColorPicker)
+			{
+				if (ImGui::Button("color palette"))
+					showColorPicker = true;
+			}
+
+			// カラーパレットの拡大表示
+			if (showColorPicker)
+			{
+				ImGui::ColorPicker4("Color", (float*)&materialData->color.x, ImGuiColorEditFlags_Float);
+
+
+			}
+
+
+			//ゲームの処理
+
+			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(kClientWidth) / float(kClientHeight), 0.1f, 100.0f);
+			Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
+			wvpData->WVP = worldviewProjectionMatrix;
+			wvpData->World = worldMatrix;
+
+			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translate);
+			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+			Matrix4x4 worldviewProjectionMatrixSprite = MatrixMultiply(worldMatrixSprite, MatrixMultiply(viewMatrixSprite, projectionMatrixSprite));
+			transformationMatrixDataSprite->WVP = worldviewProjectionMatrixSprite;
+			transformationMatrixDataSprite->World = worldMatrixSprite;
+
+			//UVTransform用の行列
+			Matrix4x4 uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+			uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
+			uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
+			materialDataSprite->uvTransform = uvTransformMatrix;
+			ImGui::End();
+
+			//ImGUi内部のコマンドを生成する
+			ImGui::Render();
+
 			//ここから書き込むバックバッファのインデックスを取得
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
 

@@ -8,7 +8,9 @@
 void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 {
 	HRESULT result;
+
 	//DirectInputのインスタンス生成
+	Microsoft::WRL::ComPtr<IDirectInput8>directInput = nullptr;
 	result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 
@@ -27,4 +29,9 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 
 void Input::Update()
 {
+	//キーボード情報の取得開始
+	keyboard->Acquire();
+	//全キーの入力情報を取得する
+	BYTE key[256] = {};
+	keyboard->GetDeviceState(sizeof(key), key);
 }
