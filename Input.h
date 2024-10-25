@@ -16,10 +16,13 @@ public :
 	void Initialize(HINSTANCE,HWND);
 	void Update();
 	bool PushKey(BYTE );
+	bool TriggerKey(BYTE);
 private:
 	
 	
 	ComPtr<IDirectInputDevice8> keyboard;
 	BYTE key[256] = {};
+	//前回の全キーの状態
+	BYTE keyPre[256] = {};
 };
 
