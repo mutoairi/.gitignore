@@ -3,6 +3,7 @@
 
 void WinApp::Initialize()
 {
+
 	WNDCLASS wc{};
 	//ウィンドウプロシーシャ
 	wc.lpfnWndProc = WindowProc;
