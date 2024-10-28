@@ -3,6 +3,8 @@
 
 void WinApp::Initialize()
 {
+	HRESULT hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
+
 	WNDCLASS wc{};
 	//ウィンドウプロシーシャ
 	wc.lpfnWndProc = WindowProc;
