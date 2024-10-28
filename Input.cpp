@@ -10,7 +10,7 @@ void Input::Initialize(HINSTANCE hInstance, HWND hwnd)
 	HRESULT result;
 
 	//DirectInputのインスタンス生成
-	Microsoft::WRL::ComPtr<IDirectInput8>directInput = nullptr;
+	
 	result = DirectInput8Create(hInstance, DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&directInput, nullptr);
 	assert(SUCCEEDED(result));
 

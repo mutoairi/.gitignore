@@ -19,7 +19,7 @@ public :
 	bool TriggerKey(BYTE);
 private:
 	
-	
+	ComPtr<IDirectInput8>directInput = nullptr;
 	ComPtr<IDirectInputDevice8> keyboard;
 	BYTE key[256] = {};
 	//前回の全キーの状態
