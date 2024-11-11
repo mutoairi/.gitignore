@@ -6,7 +6,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 void WinApp::Initialize()
 {
-	HRESULT hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
+	hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
 
 
 	WNDCLASS wc{};
@@ -23,9 +23,7 @@ void WinApp::Initialize()
 	RegisterClass(&wc);
 
 
-	//クライアント領域のサイズ
-	const int32_t kClientWidth = 1280;
-	const int32_t kClientHeight = 720;
+	
 
 	//ウィンドウサイズを表す構造体にクライアント領域を入れる
 	RECT wrc = { 0,0,kClientWidth,kClientHeight };
