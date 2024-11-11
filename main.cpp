@@ -12,6 +12,7 @@
 #include<sstream>
 #include<wrl.h>
 #include"Input.h"
+#include"WinApp.h"
 
 #include"makeMatrix.h"
 #include"externals/imugui/imgui.h"

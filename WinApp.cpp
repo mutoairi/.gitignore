@@ -1,8 +1,13 @@
 #include "WinApp.h"
+#include"externals/imugui/imgui.h"
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 
 void WinApp::Initialize()
 {
+	HRESULT hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
+
 
 	WNDCLASS wc{};
 	//ウィンドウプロシーシャ
@@ -54,3 +59,23 @@ void WinApp::Initialize()
 void WinApp::Update()
 {
 }
+//ウィンドウプロシージャ
+LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+		return true;
+	}
+	//メッセージに応じてゲーム固有の処理をする
+	switch (msg)
+	{
+		//ウィンドウが破棄された
+	case WM_DESTROY:
+		//OSに対してアプリの終了を伝える
+		PostQuitMessage(0);
+		return 0;
+
+	}
+
+	//標準のメッセージ処理を行う
+	return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+
