@@ -9,7 +9,7 @@ void WinApp::Initialize()
 	hr = CoInitializeEx(0, COINITBASE_MULTITHREADED);
 
 
-	WNDCLASS wc{};
+	
 	//ウィンドウプロシーシャ
 	wc.lpfnWndProc = WindowProc;
 	//ウィンドウクラス名
@@ -34,7 +34,7 @@ void WinApp::Initialize()
 
 	//ウィンドウの生成
 
-	HWND hwnd = CreateWindow(
+	hwnd = CreateWindow(
 		wc.lpszClassName,
 		L"CG2",
 		WS_OVERLAPPEDWINDOW,
