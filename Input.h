@@ -3,6 +3,7 @@
 #include <dinput.h>
 #include "Windows.h"
 #include <wrl.h>
+#include"WinApp.h"
 
 class Input
 {
@@ -13,7 +14,7 @@ public:
 
 
 public :
-	void Initialize(HINSTANCE,HWND);
+	void Initialize(WinApp*winApp);
 	void Update();
 	bool PushKey(BYTE );
 	bool TriggerKey(BYTE);
@@ -24,5 +25,6 @@ private:
 	BYTE key[256] = {};
 	//前回の全キーの状態
 	BYTE keyPre[256] = {};
+	WinApp* winApp = nullptr;
 };
 

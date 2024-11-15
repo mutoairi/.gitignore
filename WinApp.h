@@ -19,6 +19,9 @@ public:
 	static const int32_t kClientHeight = 720;
 	HWND hwndGetter() const{ return hwnd; }
 	HINSTANCE hInstanceGetter() const{ return wc.hInstance; }
+
+	//解放処理
+	void Finalize();
 private:
 	HRESULT hr;
 	HWND hwnd = nullptr;

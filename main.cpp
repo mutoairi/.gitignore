@@ -668,7 +668,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	
 	//入力の初期化
 	input = new Input();
-	input->Initialize(winApp->hInstanceGetter(), winApp->hwndGetter());
+	input->Initialize(winApp);
 
 	//RTVの設定
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
