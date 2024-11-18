@@ -22,6 +22,9 @@ public:
 
 	//解放処理
 	void Finalize();
+
+	//メッセージの処理
+	bool ProcessMessage();
 private:
 	HRESULT hr;
 	HWND hwnd = nullptr;
