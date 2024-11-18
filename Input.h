@@ -25,6 +25,6 @@ private:
 	BYTE key[256] = {};
 	//前回の全キーの状態
 	BYTE keyPre[256] = {};
-	WinApp* winApp = nullptr;
+	WinApp* winApp_ = nullptr;
 };
 

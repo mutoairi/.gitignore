@@ -57,8 +57,13 @@ void WinApp::Initialize()
 void WinApp::Update()
 {
 }
+void WinApp::Finalize()
+{
+	CloseWindow(hwnd);
+	CoUninitialize();
+}
 //ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+LRESULT CALLBACK WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
 		return true;
 	}
