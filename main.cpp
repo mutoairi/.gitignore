@@ -52,25 +52,7 @@ struct D3DResourceLeakChecker
 	}
 };
 
-//ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-		return true;
-	}
-	//メッセージに応じてゲーム固有の処理をする
-	switch (msg)
-	{
-		//ウィンドウが破棄された
-	case WM_DESTROY:
-		//OSに対してアプリの終了を伝える
-		PostQuitMessage(0);
-		return 0;
 
-	}
-
-	//標準のメッセージ処理を行う
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
 
 std::wstring ConvertString(const std::string& str) {
 	if (str.empty()) {
