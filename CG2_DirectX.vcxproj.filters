@@ -41,6 +41,9 @@
     <ClCompile Include="WinApp.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="DirectXCommon.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imugui\imconfig.h" />
@@ -54,6 +57,7 @@
     <ClInclude Include="makeMatrix.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="WinApp.h" />
+    <ClInclude Include="DirectXCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imugui\LICENSE.txt" />

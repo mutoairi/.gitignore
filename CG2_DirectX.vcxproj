@@ -152,6 +152,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="externals\imugui\imgui.cpp" />
     <ClCompile Include="externals\imugui\imgui_demo.cpp" />
     <ClCompile Include="externals\imugui\imgui_draw.cpp" />
@@ -164,6 +165,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="externals\imugui\imconfig.h" />
     <ClInclude Include="externals\imugui\imgui.h" />
     <ClInclude Include="externals\imugui\imgui_impl_dx12.h" />
