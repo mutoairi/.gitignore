@@ -22,6 +22,10 @@ public:
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 	//GPU
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+	//描画前処理
+	void PreDraw();
+	//描画後処理
+	void PostDraw();
 	
 private:
 	void DeviceInitialize();
@@ -80,6 +84,14 @@ private:
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
 	//スワップチェーン
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+	//rtvHandle
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+	//Transitionの設定
+	D3D12_RESOURCE_BARRIER barrier{};
+	//フェンスの値
+	uint64_t fenceValue;
+	//フェンスイベント
+	HANDLE fenceEvent;
 	//WindowsAPI
 	WinApp* winApp_ = nullptr;
 

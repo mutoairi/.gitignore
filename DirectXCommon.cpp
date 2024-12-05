@@ -70,7 +70,7 @@ void DirectXCommon::DeviceInitialize()
 	//HRESULTはWindow系のエラーコードであり、
 	//関数が成功したかどうかをSUCCEEDEDマクロで判定できる
 
-	HRESULT hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
+	hr = CreateDXGIFactory(IID_PPV_ARGS(&dxgiFactory));
 
 	//初期化の根本的な部分でエラーがでたばあいはぷろぐらむがまちがっているか、
 	// どうにもできない場合が多いのでassertにしておく
@@ -328,7 +328,7 @@ void DirectXCommon::RTVInitialize()
 	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
 	//RTVを2つ作るのでディスクリプタを2つ用意
-	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+	
 
 	for (uint32_t i = 0; i < 2; i++) {
 		//作成。作る場所をコツらで指定してあげる必要がる
@@ -356,12 +356,12 @@ void DirectXCommon::FenceInitialize()
 {
 	HRESULT hr;
 	//初期値0でFanceを作る
-	uint64_t fenceValue = 0;
+	fenceValue = 0;
 	hr = device->CreateFence(fenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
 	assert(SUCCEEDED(hr));
 
 	//FenceのSignalを待つためのイベントを発生させる
-	HANDLE fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	fenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	assert(fenceEvent != nullptr);
 }
 
@@ -400,6 +400,8 @@ void DirectXCommon::DXCCompilerInitialize()
 	assert(SUCCEEDED(hr));
 }
 
+//---------------ImGui-------------------------
+
 void DirectXCommon::ImGuiInitialize()
 {
 	// ImGuiの初期化
@@ -432,6 +434,97 @@ D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVCPUDescriptorHandle(uint32_t in
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetSRVGPUDescriptorHandle(uint32_t index)
 {
 	return GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, index);
+}
+
+
+//======================  描画前処理 =======================================
+
+void DirectXCommon::PreDraw()
+{
+
+	//ここから書き込むバックバッファのインデックスを取得
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	// 今回のバリアはTransition
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+
+	//Noneにしていく
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+	//バリアを張る対象のリソース。現在のバックバッファに対して行う
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+
+	//透過前（現在）のResourceState
+	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+
+	//透過後のResourceState
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+
+	//Transitionを張る
+	commandList->ResourceBarrier(1, &barrier);
+	
+	//描画先のRTVとDSVを設定する
+	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = GetCPUDescriptorHandle(dsvDescriptorHeap.Get(), descriptorSizeDSV, 0);
+
+
+	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
+	
+	//指定した色で画面全体をクリアする
+	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };//青っぽい色。RGBAの順
+	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
+	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+	//描画用のDescriptorHeapの設定
+	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> descriptorHeap[] = { srvDescriptorHeap };
+	commandList->SetDescriptorHeaps(1, descriptorHeap->GetAddressOf());
+	//
+
+	commandList->RSSetViewports(1, &viewport);//Viewportを設定
+	commandList->RSSetScissorRects(1, &scissorRect);//Scirssorを設定
+}
+
+void DirectXCommon::PostDraw()
+{
+	HRESULT hr;
+	//ここから書き込むバックバッファのインデックスを取得
+	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	// 今回のバリアはTransition
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	//Noneにしていく
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+
+	// 画面に書く処理はすべて終わり、画面に映すので状態遷移
+		//RenderTargetからPresentにする
+		barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	//TransitionBarrrierを張る
+	commandList->ResourceBarrier(1, &barrier);
+
+
+	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからクローズすること
+	hr = commandList->Close();
+
+	assert(SUCCEEDED(hr));
+
+	//GPUにコマンドリストの実行を行わせる
+	Microsoft::WRL::ComPtr < ID3D12CommandList> commandLists[] = { commandList.Get() };
+	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
+
+	//GPUと05に描画の交換を行うよう通知する
+	swapChain->Present(1, 0);
+	//Fenceの値を更新
+	fenceValue++;
+	//GPUがここまでたどり着いたときにFenceの値を指定した値に代入するようにSignalを送る
+	commandQueue->Signal(fence.Get(), fenceValue);
+
+	//Fenceの値を指定したSignal値にたどり着いてるかを確認する
+   //GetCompleteValueの初期値はFence作成時に渡した初期値
+	if (fence->GetCompletedValue() < fenceValue) {
+
+		//指定したSignalにたどり着いていないので、たどり着くまで待つようにイベントを設定する
+		fence->SetEventOnCompletion(fenceValue, fenceEvent);
+		//イベント待つ
+		WaitForSingleObject(fenceEvent, INFINITE);
+	}
 }
 
 D3D12_CPU_DESCRIPTOR_HANDLE  DirectXCommon::GetCPUDescriptorHandle(ComPtr < ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index) {
