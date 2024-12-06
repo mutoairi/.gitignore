@@ -6,6 +6,7 @@
 #include <array>
 #include <dxcapi.h>
 #include <string>
+#include<chrono>
 #include"externals/DirectXTex/DirectXTex.h"
 #include"Logger.h"
 #include"StringUtility.h"
@@ -61,6 +62,8 @@ private:
 	void ScissoringInitialize();
 	void DXCCompilerInitialize();
 	void ImGuiInitialize();
+	void InitializeFixFPS();
+	void UpdateFixFPS();
 	//CPU
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index);
 	//GPU
@@ -115,8 +118,8 @@ private:
 	HANDLE fenceEvent;
 	//includeHandler
 	IDxcIncludeHandler* includeHandler;
-	
-
+	//記録時間
+	std::chrono::steady_clock::time_point reference_;
 	HRESULT hr;
 	//WindowsAPI
 	WinApp* winApp= nullptr;
