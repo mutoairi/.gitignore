@@ -1247,26 +1247,26 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//平行光源
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
-			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			////描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
+			//commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
-			
+			//
 
-			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-			////IBVを設定
-			commandList->IASetIndexBuffer(&indexBufferViewSprite);
-			//マテリアルCBufferの場所を設定
-			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-			//TransformationMatrixCbufferの場所を設定
-			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-			//SRVのDescriptorTableの先頭を設定
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			//平行光源
-			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+			//commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			//////IBVを設定
+			//commandList->IASetIndexBuffer(&indexBufferViewSprite);
+			////マテリアルCBufferの場所を設定
+			//commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+			////TransformationMatrixCbufferの場所を設定
+			////commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+			////SRVのDescriptorTableの先頭を設定
+			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			////平行光源
+			//commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
-			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
-			
+			////描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
+			//commandList->DrawIndexedInstanced(6, 1, 0, 0,0);
+			//
 
 			//================== Particle ===================//
 
