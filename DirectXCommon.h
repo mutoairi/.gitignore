@@ -1,9 +1,12 @@
 #pragma once
-#include<d3d12.h>
-#include<dxgi1_6.h>
-#include<wrl.h>
-#include<array>
-#include<dxcapi.h>
+#include "Windows.h"
+#include <d3d12.h>
+#include <dxgi1_6.h>
+#include <wrl.h>
+#include <array>
+#include <dxcapi.h>
+#include <string>
+#include"externals/DirectXTex/DirectXTex.h"
 #include"Logger.h"
 #include"StringUtility.h"
 #include"WinApp.h"
@@ -16,16 +19,34 @@ public:
 
 	//デスクリプタヒープ生成
 	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> CreateDescriptorHeap
-	(Microsoft::WRL::ComPtr < ID3D12Device> device, D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
+	( D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);
 	//srv専用
 	//CPU
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
 	//GPU
 	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+
+	//コンパイルシェーダー
+	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath, const wchar_t* profile);
+
+	//リソース生成
+	Microsoft::WRL::ComPtr < ID3D12Resource> CreateBufferResource( size_t sizeInBytes);
+	//テクスチャ生成
+	Microsoft::WRL::ComPtr < ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
+	//テクスチャ読み込み	
+	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+	//アップロードテクスチャ
+	void UploadTextureData(Microsoft::WRL::ComPtr < ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
+	//深度テクスチャ
+	Microsoft::WRL::ComPtr < ID3D12Resource> CreateDepthStencilTextureResource( int32_t width, int32_t height);
 	//描画前処理
 	void PreDraw();
 	//描画後処理
 	void PostDraw();
+	//getter
+	ID3D12Device* GetDevice()const { return device.Get(); }
+	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
+
 	
 private:
 	void DeviceInitialize();
@@ -56,11 +77,11 @@ private:
 	//commandList
 	Microsoft::WRL::ComPtr < ID3D12GraphicsCommandList> commandList ;
 	//swapChain
-	Microsoft::WRL::ComPtr < IDXGISwapChain4> swapChain ;
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
 	//resource
-	Microsoft::WRL::ComPtr < ID3D12Resource> resource = nullptr;
+	Microsoft::WRL::ComPtr < ID3D12Resource> resource;
 	//SwapChainからResourceを引っ張ってくる(2)
-	Microsoft::WRL::ComPtr < ID3D12Resource> swapChainResources[2] = { nullptr };
+	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
 	//DescriptorSize
 	uint32_t descriptorSizeSRV;
 	uint32_t descriptorSizeRTV;
@@ -92,8 +113,13 @@ private:
 	uint64_t fenceValue;
 	//フェンスイベント
 	HANDLE fenceEvent;
+	//includeHandler
+	IDxcIncludeHandler* includeHandler;
+	
+
+	HRESULT hr;
 	//WindowsAPI
-	WinApp* winApp_ = nullptr;
+	WinApp* winApp= nullptr;
 
 };
 
