@@ -1,9 +1,10 @@
 #include "Sprite.h"
 #include"SpriteCommon.h"
 using namespace Microsoft::WRL;
-void Sprite::Initialize(SpriteCommon* spriteCommon)
+void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 {
 	this->spriteCommon = spriteCommon;
+	
 	
 	//vertex
 	VertexInitialize();
@@ -17,7 +18,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon)
 	//transformation
 	TransformationInitialize();
 
-
+	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
 }
 
 void Sprite::Update()
@@ -59,7 +60,7 @@ void Sprite::Update()
 	UVTransform(uvTransformSprite);
 }
 
-void Sprite::Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU)
+void Sprite::Draw()
 {
 
 	
@@ -73,7 +74,7 @@ void Sprite::Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU)
 	//TransformationMatrixCbufferの場所を設定
 	spriteCommon->GetDxcCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 	//SRVのDescriptorTableの先頭を設定
-	spriteCommon->GetDxcCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+	spriteCommon->GetDxcCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(textureIndex));
 
 	//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
 	spriteCommon->GetDxcCommon()->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);

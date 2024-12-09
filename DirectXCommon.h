@@ -34,8 +34,7 @@ public:
 	Microsoft::WRL::ComPtr < ID3D12Resource> CreateBufferResource( size_t sizeInBytes);
 	//テクスチャ生成
 	Microsoft::WRL::ComPtr < ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
-	//テクスチャ読み込み	
-	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
+	
 	//アップロードテクスチャ
 	void UploadTextureData(Microsoft::WRL::ComPtr < ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
 	//深度テクスチャ
@@ -47,7 +46,8 @@ public:
 	//getter
 	ID3D12Device* GetDevice()const { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
-
+	//最大SRV
+	static const uint32_t kMaxSRVCount;
 	
 private:
 	void DeviceInitialize();
@@ -120,6 +120,7 @@ private:
 	IDxcIncludeHandler* includeHandler;
 	//記録時間
 	std::chrono::steady_clock::time_point reference_;
+	
 	HRESULT hr;
 	//WindowsAPI
 	WinApp* winApp= nullptr;

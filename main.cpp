@@ -18,6 +18,7 @@
 #include"D3DResourceLeakChecker.h"
 #include"SpriteCommon.h"
 #include"Sprite.h"
+#include"TextureManager.h"
 
 #include"makeMatrix.h"
 #include"externals/imugui/imgui.h"
@@ -190,7 +191,7 @@ DirectXCommon* dxcCommon = nullptr;
 //DirectXの初期化
 dxcCommon = new DirectXCommon();
 dxcCommon->Initialize(winApp);
-HRESULT hr;
+//HRESULT hr;
 
 
 
@@ -215,6 +216,10 @@ HRESULT hr;
 	//初期化
 	spriteCommon = new SpriteCommon;
 	spriteCommon->Initialize(dxcCommon);
+
+	TextureManager::GetInstance()->Initialize(dxcCommon);
+	//Textureを読んで転送する
+	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 
 
 	//const uint32_t kSubdivision = 16;
@@ -258,12 +263,15 @@ HRESULT hr;
 
 	
 	//Spriteを作成
+	std::vector<Sprite*>sprites;
+	for (uint32_t i = 0; i < 5; ++i) {
+		Sprite* sprite = new Sprite();
+		sprite->Initialize(spriteCommon, "resources/uvChecker.png");
+		sprite->SetPosition({ 100.0f * i,0.0f });
+		sprite->SetSize({ 50.0f,50.0f });
+		sprites.push_back(sprite);
+	}
 
-	Sprite* sprite = nullptr;
-
-	//初期化
-	sprite = new Sprite();
-	sprite->Initialize(spriteCommon);
 	
 
 	//平行光源用
@@ -275,48 +283,28 @@ HRESULT hr;
 	directionalLightData->intensity = 1.0f;
 
 	
-	//Textureを読んで転送する
-	DirectX::ScratchImage mipImages =dxcCommon-> LoadTexture("resources/uvChecker.png");
-	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource = dxcCommon->CreateTextureResource( metadata);
-	dxcCommon->UploadTextureData(textureResource.Get(), mipImages);
-
+	
 	//2枚目のTextureを読んで転送する
-	DirectX::ScratchImage mipImages2 = dxcCommon->LoadTexture(modelData.material.texturFilePath);
-	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
-	Microsoft::WRL::ComPtr < ID3D12Resource> textureResource2 = dxcCommon->CreateTextureResource( metadata2);
-	dxcCommon->UploadTextureData(textureResource2.Get(), mipImages2);
+	TextureManager::GetInstance()->LoadTexture(modelData.material.texturFilePath);
 	
-	//metaDataを基にSRV設定
-	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
-	srvDesc.Format = metadata.format;
-	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-
+	
 
 	
 	//SRVを作成するDescriptorHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxcCommon->GetSRVCPUDescriptorHandle(0);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxcCommon->GetSRVGPUDescriptorHandle(0);
-	//先頭はImGuiが使っているのでその次を使う
-	textureSrvHandleCPU.ptr += dxcCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	textureSrvHandleGPU.ptr += dxcCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	//SRVの生成
-	dxcCommon->GetDevice()->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
+	/*D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = dxcCommon->GetSRVCPUDescriptorHandle(1);
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = dxcCommon->GetSRVGPUDescriptorHandle(1);*/
+	////先頭はImGuiが使っているのでその次を使う
+	//textureSrvHandleCPU.ptr += dxcCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	//textureSrvHandleGPU.ptr += dxcCommon->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	//
 
-	// metaDataを基にSRV設定
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
-	srvDesc2.Format = metadata2.format;
-	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-	//SRVを作成するDescriptorHeapの場所を決める
-	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxcCommon->GetSRVCPUDescriptorHandle(2);
-	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxcCommon->GetSRVGPUDescriptorHandle(2);
+	//
+	////SRVを作成するDescriptorHeapの場所を決める
+	//D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = dxcCommon->GetSRVCPUDescriptorHandle(2);
+	//D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = dxcCommon->GetSRVGPUDescriptorHandle(2);
 
 
-	dxcCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
+	//dxcCommon->GetDevice()->CreateShaderResourceView(textureResource2.Get(), &srvDesc2, textureSrvHandleCPU2);
 
 
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
@@ -386,11 +374,12 @@ HRESULT hr;
 			wvpData->WVP = worldviewProjectionMatrix;
 			wvpData->World = worldMatrix;
 
+			for (size_t i = 0; i < sprites.size(); ++i) {
+				Sprite* sprite = sprites[i];
 
-			
-
-			sprite->Update();
-
+				//Spriteの更新
+				sprite->Update();
+			}
 			
 			ImGui::End();
 
@@ -403,27 +392,30 @@ HRESULT hr;
 			//Spriteの描画準備
 			spriteCommon->CommonDrawing();
 			
-			dxcCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
-			//マテリアルCBufferの場所を設定
-			dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			//wvp用のCBufferの場所を設定
-			dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
-			//SRVのDescriptorTableの先頭を設定
-			dxcCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2,useMonsterBall? textureSrvHandleGPU2:textureSrvHandleGPU);
-			//平行光源
-			dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+			//dxcCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
+			////マテリアルCBufferの場所を設定
+			//dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			////wvp用のCBufferの場所を設定
+			//dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+			////SRVのDescriptorTableの先頭を設定
+			////dxcCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2,useMonsterBall? textureSrvHandleGPU2:textureSrvHandleGPU);
+			////平行光源
+			//dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
-			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			dxcCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			////描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
+			//dxcCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 
-			
+			//
 
 			
 			//平行光源
 			dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 			//Sprite描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			sprite->Draw(textureSrvHandleGPU);
+			for (Sprite* sprite : sprites) {
+				
+				sprite->Draw();
+			}
 			//
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxcCommon->GetCommandList());
 
@@ -445,10 +437,14 @@ HRESULT hr;
 	//解放処理
 	//CloseHandle(fenceEvent);
 	
+	TextureManager::GetInstance()->Finalize();
 	//入力解放
 	delete input;
 	delete dxcCommon;
-	
+	delete spriteCommon;
+	for (Sprite* sprite : sprites) {
+		delete sprite;
+	}
 	//CloseWindow
 	winApp->Finalize();
 	

@@ -62,6 +62,9 @@
     <ClCompile Include="makeMatrix.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="TextureManager.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imugui\imconfig.h" />
@@ -81,6 +84,7 @@
     <ClInclude Include="D3DResourceLeakChecker.h" />
     <ClInclude Include="SpriteCommon.h" />
     <ClInclude Include="Sprite.h" />
+    <ClInclude Include="TextureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imugui\LICENSE.txt" />

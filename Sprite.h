@@ -15,6 +15,7 @@
 #include<wrl.h>
 #include"Logger.h"
 #include"StringUtility.h"
+#include"TextureManager.h"
 
 
 struct Material
@@ -29,11 +30,11 @@ class SpriteCommon;
 class Sprite
 {
 public:
-	void Initialize(SpriteCommon*spriteCommon);
+	void Initialize(SpriteCommon*spriteCommon,std::string textureFilePath);
 
 	void Update();
 
-	void Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU);
+	void Draw();
 
 	//getter
 	const Vector2& GetPosition()const { return position; }
@@ -71,6 +72,8 @@ private:
 	Material* materialDataSprite = nullptr;
 	//トランスフォーメーションのデータを書き込む
 	TransformationMatrix* transformationMatrixDataSprite = nullptr;
+	//テクスチャ番号
+	uint32_t textureIndex = 0;
 
 	Vector2 position = { 0.0f,0.0f };
 	Vector2 size = { 640.0f,360.0f };
