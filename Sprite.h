@@ -35,6 +35,18 @@ public:
 
 	void Draw(D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU);
 
+	//getter
+	const Vector2& GetPosition()const { return position; }
+	float GetRotation()const { return rotation; }
+	const Vector4& GetColor()const { return materialDataSprite->color; }
+	const Vector2& GetSize()const { return size; }
+
+	//setter
+	void SetPosition(const Vector2& position) { this->position = position; }
+	void SetRotation(float rotation) { this->rotation = rotation; }
+	void SetColor(const Vector4& color) { materialDataSprite->color = color; }
+	void SetSize(const Vector2& size) { this->size = size; }
+
 private:
 	void VertexInitialize();
 	void IndexInitialize();
@@ -59,7 +71,10 @@ private:
 	Material* materialDataSprite = nullptr;
 	//トランスフォーメーションのデータを書き込む
 	TransformationMatrix* transformationMatrixDataSprite = nullptr;
-	
+
+	Vector2 position = { 0.0f,0.0f };
+	Vector2 size = { 640.0f,360.0f };
+	float rotation = 0.0f;
 
 	//バッファリソースの使い道を補足するバッファービュー
 	//頂点バッファビューを作成する
