@@ -259,13 +259,11 @@ HRESULT hr;
 	
 	//Spriteを作成
 
-	std::list<Sprite*>sprites;
-	for (Sprite* sprite : sprites) {
-		//初期化
-		sprite = new Sprite();
-		sprite->Initialize(spriteCommon);
-		sprites.push_back(sprite);
-	}
+	Sprite* sprite = nullptr;
+
+	//初期化
+	sprite = new Sprite();
+	sprite->Initialize(spriteCommon);
 	
 
 	//平行光源用
@@ -389,11 +387,11 @@ HRESULT hr;
 			wvpData->World = worldMatrix;
 
 
-			for (Sprite* sprite : sprites) {
+			
 
-				sprite->Update();
+			sprite->Update();
 
-			}
+			
 			ImGui::End();
 
 			//ImGUi内部のコマンドを生成する
@@ -425,9 +423,7 @@ HRESULT hr;
 			dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
 			//Sprite描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
-			for (Sprite* sprite : sprites) {
-				sprite->Draw(textureSrvHandleGPU);
-			}
+			sprite->Draw(textureSrvHandleGPU);
 			//
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxcCommon->GetCommandList());
 
