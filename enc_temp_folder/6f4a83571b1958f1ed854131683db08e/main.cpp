@@ -448,8 +448,7 @@ dxcCommon->Initialize(winApp);
 	//入力解放
 	delete input;
 	delete dxcCommon;
-	delete spriteCommon;
-	delete sprite;
+	
 	//CloseWindow
 	winApp->Finalize();
 	
