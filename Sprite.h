@@ -64,6 +64,7 @@ private:
 	void TransformationInitialize();
 	void TransformationUpdate(Transform transformationSprite);
 	void UVTransform(Transform transformationSprite);
+	void AdjustTextureSize();
 
 	SpriteCommon* spriteCommon = nullptr;
 	//バッファリソース

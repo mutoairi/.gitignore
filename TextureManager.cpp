@@ -90,7 +90,7 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	textureData.filePath = filePath;
 	textureData.metaData = mipImages.GetMetadata();
 	textureData.resource = dxcCommon_->CreateTextureResource(textureData.metaData);
-	textureData.intermediateResource=dxcCommon_->UploadTextureData(textureData.resource, mipImages);
+	dxcCommon_->UploadTextureData(textureData.resource, mipImages);
 
 	dxcCommon_->ReturnCommand();
 	
@@ -113,6 +113,9 @@ void TextureManager::LoadTexture(const std::string& filePath)
 }
 
 const DirectX::TexMetadata& TextureManager::GetMeteData(uint32_t textureIndex)
-{
-	
+{// 範囲外指定チェック
+	assert(textureIndex < textureDatas.size());
+	// テクスチャデータの参照を取得
+	TextureData& textureData = textureDatas[textureIndex];
+	return textureData.metaData;
 }

@@ -19,6 +19,7 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 	TransformationInitialize();
 
 	textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(textureFilePath);
+	AdjustTextureSize();
 }
 
 void Sprite::Update()
@@ -40,22 +41,26 @@ void Sprite::Update()
 		bottom = -bottom;
 	}
 
-
+	const DirectX::TexMetadata& metaData = TextureManager::GetInstance()->GetMeteData(textureIndex);
+	float tex_left = textureLeftTop.x / metaData.width;
+	float tex_right = (textureLeftTop.x + textureSize.x) / metaData.width;
+	float tex_top = textureLeftTop.y / metaData.height;
+	float tex_bottom= (textureLeftTop.y + textureSize.y) / metaData.height;
 
 	//============================  頂点座標   =============================
 
 	//頂点リソースにデータを書き込む
 	vertexData[0].position = { left,bottom,0.0f,1.0f };
-	vertexData[0].texcoord = { 0.0f,1.0f };
+	vertexData[0].texcoord = { tex_left,tex_bottom };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[1].position = { left,top,0.0f,1.0f };
-	vertexData[1].texcoord = { 0.0f,0.0f };
+	vertexData[1].texcoord = { tex_left,tex_top };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[2].position = { right,bottom,0.0f,1.0f };
-	vertexData[2].texcoord = { 1.0f,1.0f };
+	vertexData[2].texcoord = { tex_right,tex_bottom};
 	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
 	vertexData[3].position = { right,top,0.0f,1.0f };
-	vertexData[3].texcoord = { 1.0f,0.0f };
+	vertexData[3].texcoord = { tex_right,tex_top};
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 
 	//============================トランスフォーム==========================
@@ -195,4 +200,14 @@ void Sprite::UVTransform(Transform uvTransformSprite)
 	uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeRotateZMatrix(uvTransformSprite.rotate.z));
 	uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 	materialDataSprite->uvTransform = uvTransformMatrix;
+}
+
+void Sprite::AdjustTextureSize()
+{
+	const DirectX::TexMetadata& metaData = TextureManager::GetInstance()->GetMeteData(textureIndex);
+	textureSize.x = static_cast<float>(metaData.width);
+	textureSize.y = static_cast<float>(metaData.height);
+
+	//画像サイズをテクスチャサイズに合わせる
+	size = textureSize;
 }

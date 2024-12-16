@@ -561,7 +561,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 	Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompilerShader,path:{},profile:{}\n", filePath, profile)));
 	//hlslファイルを読む
 	IDxcBlobEncoding* shaderSource = nullptr;
-	 hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
+	hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
 	//読めなかったら止める
 	assert(SUCCEEDED(hr));
 	//読み込んだファイルの内容を設定する
@@ -605,7 +605,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 	assert(SUCCEEDED(hr));
 
 	//成功したログを出す
-	Logger::Log(StringUtility:: ConvertString(std::format(L"Compile Succeeded,path:{},profile:{}\n", filePath, profile)));
+	Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded,path:{},profile:{}\n", filePath, profile)));
 	//もう使わないリソースを解放
 
 	//実行用のバイナリを返却
@@ -643,8 +643,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(const DirectX::TexMetadata& metadata)
-{
-	//metadataを基にResourceの設定
+{//metadataを基にResourceの設定
 	D3D12_RESOURCE_DESC resourceDesc{};
 	resourceDesc.Width = UINT(metadata.width);
 	resourceDesc.Height = UINT(metadata.height);
@@ -664,41 +663,60 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(cons
 		&heapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&resourceDesc,
-		D3D12_RESOURCE_STATE_COPY_DEST,
+		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&resource));
 	assert(SUCCEEDED(hr));
 	return resource;
 }
-
-
-[[nodiscard]]
-
-ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
+//
+//
+//[[nodiscard]]
+//
+//ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
+//{
+//	std::vector<D3D12_SUBRESOURCE_DATA> subResource;
+//	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subResource);
+//	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subResource.size()));
+//	ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource(intermediateSize);
+//	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subResource.size()), subResource.data());
+//
+//	D3D12_RESOURCE_BARRIER barrier{};
+//	// 今回のバリアばTransition
+//		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+//	// Noneにしておく
+//	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+//	// バリアを張る対象のリソース。現在のバックバッファに対して行う
+//	barrier.Transition.pResource = texture.Get();
+//	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+//	// 遷移前（現在）のResourceState
+//	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+//	// 遷移後のResourceState
+//	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
+//	// TransitionBarrierを張る
+//	commandList->ResourceBarrier(1, &barrier);
+//
+//	return intermediateResource;
+//
+//}
+void DirectXCommon::UploadTextureData(Microsoft::WRL::ComPtr<ID3D12Resource> texture, const DirectX::ScratchImage& mipImages)
 {
-	std::vector<D3D12_SUBRESOURCE_DATA> subResource;
-	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subResource);
-	uint64_t intermediateSize = GetRequiredIntermediateSize(texture.Get(), 0, UINT(subResource.size()));
-	ComPtr<ID3D12Resource> intermediateResource = CreateBufferResource(intermediateSize);
-	UpdateSubresources(commandList.Get(), texture.Get(), intermediateResource.Get(), 0, 0, UINT(subResource.size()), subResource.data());
-
-	D3D12_RESOURCE_BARRIER barrier{};
-	// 今回のバリアばTransition
-		barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	// Noneにしておく
-	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	// バリアを張る対象のリソース。現在のバックバッファに対して行う
-	barrier.Transition.pResource = texture.Get();
-	barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-	// 遷移前（現在）のResourceState
-	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-	// 遷移後のResourceState
-	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_GENERIC_READ;
-	// TransitionBarrierを張る
-	commandList->ResourceBarrier(1, &barrier);
-
-	return intermediateResource;
-
+	//Meta情報を取得
+	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+	//全MipMapについて
+	for (size_t mipLevel = 0; mipLevel < metadata.mipLevels; ++mipLevel) {
+		//MipMapLevelを指定して各mipLevelImageを取得
+		const DirectX::Image* img = mipImages.GetImage(mipLevel, 0, 0);
+		//Textureに転送
+		HRESULT hr = texture->WriteToSubresource(
+			UINT(mipLevel),
+			nullptr,
+			img->pixels,
+			UINT(img->rowPitch),
+			UINT(img->slicePitch)
+		);
+		assert(SUCCEEDED(hr));
+	}
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTextureResource(int32_t width, int32_t height)
