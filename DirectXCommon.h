@@ -36,7 +36,7 @@ public:
 	Microsoft::WRL::ComPtr < ID3D12Resource> CreateTextureResource(const DirectX::TexMetadata& metadata);
 	
 	//アップロードテクスチャ
-	void UploadTextureData(Microsoft::WRL::ComPtr < ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
+	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(Microsoft::WRL::ComPtr < ID3D12Resource> texture, const DirectX::ScratchImage& mipImages);
 	//深度テクスチャ
 	Microsoft::WRL::ComPtr < ID3D12Resource> CreateDepthStencilTextureResource( int32_t width, int32_t height);
 	//描画前処理

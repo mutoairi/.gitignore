@@ -90,10 +90,10 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	textureData.filePath = filePath;
 	textureData.metaData = mipImages.GetMetadata();
 	textureData.resource = dxcCommon_->CreateTextureResource(textureData.metaData);
-	//dxcCommon_->UploadTextureData(textureData.resource, mipImages);
+	textureData.intermediateResource=dxcCommon_->UploadTextureData(textureData.resource, mipImages);
 	
 	//SRVINdex
-	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size() - 1)+kSRVIndexTop;
+	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size() - 1 + kSRVIndexTop);
 
 	textureData.srvHandleCPU = dxcCommon_->GetSRVCPUDescriptorHandle(srvIndex);
 	textureData.srvHandleGPU = dxcCommon_->GetSRVGPUDescriptorHandle(srvIndex);
