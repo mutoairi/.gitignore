@@ -99,6 +99,9 @@ void TextureManager::LoadTexture(const std::string& filePath)
 
 	textureData.srvHandleCPU = dxcCommon_->GetSRVCPUDescriptorHandle(srvIndex);
 	textureData.srvHandleGPU = dxcCommon_->GetSRVGPUDescriptorHandle(srvIndex);
+	//先頭はImGuiが使っているのでその次を使う
+	textureData.srvHandleCPU.ptr += dxcCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	textureData.srvHandleGPU.ptr += dxcCommon_->GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};
 	srvDesc.Format = textureData.metaData.format;
