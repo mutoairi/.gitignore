@@ -111,3 +111,8 @@ void TextureManager::LoadTexture(const std::string& filePath)
 
 	dxcCommon_->GetDevice()->CreateShaderResourceView(textureData.resource.Get(), &srvDesc, textureData.srvHandleCPU);
 }
+
+const DirectX::TexMetadata& TextureManager::GetMeteData(uint32_t textureIndex)
+{
+	
+}

@@ -41,12 +41,21 @@ public:
 	float GetRotation()const { return rotation; }
 	const Vector4& GetColor()const { return materialDataSprite->color; }
 	const Vector2& GetSize()const { return size; }
-
+	const Vector2& GetAnchorPoint()const { return anchorPoint; }
+	const bool GetFlipX()const { return isFlipX_; }
+	const bool GetFlipY()const { return isFlipY_; }
+	const Vector2& GetTexturePosition()const { return textureLeftTop; }
+	const Vector2& GetTextureSize()const { return textureSize; }
 	//setter
 	void SetPosition(const Vector2& position) { this->position = position; }
 	void SetRotation(float rotation) { this->rotation = rotation; }
 	void SetColor(const Vector4& color) { materialDataSprite->color = color; }
 	void SetSize(const Vector2& size) { this->size = size; }
+	void SetAnchorPoint (const Vector2& anchorPoint) { this->anchorPoint = anchorPoint; }
+	void SetFlipX(bool flipX) { isFlipX_ = flipX; }
+	void SetFlipY(bool flipY) { isFlipY_ = flipY; }
+	void SetTextureLeftPosition(const Vector2& leftPosition) { textureLeftTop = leftPosition; }
+	void SetTextureSize(const Vector2& textureSize) { this->textureSize = textureSize; }
 
 private:
 	void VertexInitialize();
@@ -78,7 +87,15 @@ private:
 	Vector2 position = { 0.0f,0.0f };
 	Vector2 size = { 640.0f,360.0f };
 	float rotation = 0.0f;
-
+	Vector2 anchorPoint = { 0.0f,0.0f };
+	//左右フリップ
+	bool isFlipX_ = false;
+	//上下フリップ
+	bool isFlipY_ = false;
+	//テクスチャ左上
+	Vector2 textureLeftTop = { 0.0f,0.0f };
+	//テクスチャサイズ
+	Vector2 textureSize = { 100.0f,100.0f };
 	//バッファリソースの使い道を補足するバッファービュー
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};

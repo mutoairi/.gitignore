@@ -22,6 +22,8 @@ public:
 	void Initialize(DirectXCommon* dxcCommon);
 	//テクスチャ読み込み	
 	void LoadTexture(const std::string& filePath);
+
+	const DirectX::TexMetadata& GetMeteData(uint32_t textureIndex);
 private:
 	//テクスチャ1枚分のデータ
 	struct  TextureData

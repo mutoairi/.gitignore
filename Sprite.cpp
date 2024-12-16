@@ -23,19 +23,38 @@ void Sprite::Initialize(SpriteCommon* spriteCommon, std::string textureFilePath)
 
 void Sprite::Update()
 {
+	//アンカーポイント
+	float left = 0.0f - anchorPoint.x;
+	float right = 1.0f - anchorPoint.x;
+	float top = 0.0f - anchorPoint.y;
+	float bottom = 1.0f - anchorPoint.y;
+
+	//左右反転
+	if (isFlipX_) {
+		left = -left;
+		right = -right;
+	}
+	//上下反転
+	if (isFlipY_) {
+		top = -top;
+		bottom = -bottom;
+	}
+
+
+
 	//============================  頂点座標   =============================
 
 	//頂点リソースにデータを書き込む
-	vertexData[0].position = { 0.0f,1.0f,0.0f,1.0f };
+	vertexData[0].position = { left,bottom,0.0f,1.0f };
 	vertexData[0].texcoord = { 0.0f,1.0f };
 	vertexData[0].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[1].position = { 0.0f,0.0f,0.0f,1.0f };
+	vertexData[1].position = { left,top,0.0f,1.0f };
 	vertexData[1].texcoord = { 0.0f,0.0f };
 	vertexData[1].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[2].position = { 1.0f,1.0f,0.0f,1.0f };
+	vertexData[2].position = { right,bottom,0.0f,1.0f };
 	vertexData[2].texcoord = { 1.0f,1.0f };
 	vertexData[2].normal = { 0.0f,0.0f,-1.0f };
-	vertexData[3].position = { 1.0f,0.0f,0.0f,1.0f };
+	vertexData[3].position = { right,top,0.0f,1.0f };
 	vertexData[3].texcoord = { 1.0f,0.0f };
 	vertexData[3].normal = { 0.0f,0.0f,-1.0f };
 
