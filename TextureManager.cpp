@@ -91,6 +91,8 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	textureData.metaData = mipImages.GetMetadata();
 	textureData.resource = dxcCommon_->CreateTextureResource(textureData.metaData);
 	textureData.intermediateResource=dxcCommon_->UploadTextureData(textureData.resource, mipImages);
+
+	dxcCommon_->ReturnCommand();
 	
 	//SRVINdex
 	uint32_t srvIndex = static_cast<uint32_t>(textureDatas.size() - 1 + kSRVIndexTop);

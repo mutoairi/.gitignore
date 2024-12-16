@@ -43,6 +43,8 @@ public:
 	void PreDraw();
 	//描画後処理
 	void PostDraw();
+	//コマンドを返す処理
+	void ReturnCommand();
 	//getter
 	ID3D12Device* GetDevice()const { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }

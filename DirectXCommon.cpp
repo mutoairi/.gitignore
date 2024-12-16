@@ -514,7 +514,12 @@ void DirectXCommon::PostDraw()
 	//TransitionBarrrierを張る
 	commandList->ResourceBarrier(1, &barrier);
 
+	ReturnCommand();
+	
+}
 
+void DirectXCommon::ReturnCommand()
+{
 	//コマンドリストの内容を確定させる。すべてのコマンドを積んでからクローズすること
 	hr = commandList->Close();
 
@@ -541,7 +546,7 @@ void DirectXCommon::PostDraw()
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
 	//FPS固定
-	
+
 	//次のフレーム用のコマンドリストを準備
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));

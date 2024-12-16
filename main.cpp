@@ -220,7 +220,7 @@ dxcCommon->Initialize(winApp);
 	TextureManager::GetInstance()->Initialize(dxcCommon);
 	//Textureを読んで転送する
 	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
-
+	TextureManager::GetInstance()->LoadTexture("resources/monsterBall.png");
 
 	//const uint32_t kSubdivision = 16;
 	ModelData modelData = LoadObjFile("resources", "plane.obj");
@@ -266,7 +266,7 @@ dxcCommon->Initialize(winApp);
 	std::vector<Sprite*>sprites;
 	for (uint32_t i = 0; i < 5; ++i) {
 		Sprite* sprite = new Sprite();
-		sprite->Initialize(spriteCommon, "resources/uvChecker.png");
+		sprite->Initialize(spriteCommon, "resources/monsterBall.png");
 		sprite->SetPosition({ 100.0f * i,0.0f });
 		sprite->SetSize({ 50.0f,50.0f });
 		sprites.push_back(sprite);
