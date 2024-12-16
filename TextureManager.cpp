@@ -73,8 +73,9 @@ void TextureManager::LoadTexture(const std::string& filePath)
 	//テクスチャファイルを読んでプログラムを扱えるようにする
 	DirectX::ScratchImage image{};
 	std::wstring filePathW = StringUtility::ConvertString(filePath);
-	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
 	
+	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	image.OverrideFormat(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
 	assert(SUCCEEDED(hr));
 
 	//ミップマップの作成
