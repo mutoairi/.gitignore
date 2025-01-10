@@ -40,6 +40,7 @@ struct Material
 {
 	Vector4 color;
 	int32_t enableLighting;
+	float shininess;
 };
 struct DirectionalLight
 {
@@ -47,6 +48,10 @@ struct DirectionalLight
 	Vector3 direction;
 	float intensity;
 
+};
+struct CameraForGPU 
+{
+	Vector3 worldPosition;
 };
 // 行列の掛け算
 Matrix4x4 MatrixMultiply(Matrix4x4 m1, Matrix4x4 m2) {
