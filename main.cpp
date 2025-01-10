@@ -199,6 +199,7 @@ DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 	DirectX::ScratchImage image{};
 	std::wstring filePathW = ConvertString(filePath);
 	HRESULT hr = DirectX::LoadFromWICFile(filePathW.c_str(), DirectX::WIC_FLAGS_FORCE_SRGB, nullptr, image);
+	image.OverrideFormat(DXGI_FORMAT_R8G8B8A8_UNORM_SRGB);
 	assert(SUCCEEDED(hr));
 
 	//ミップマップの作成
@@ -753,7 +754,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//書き込むためのアドレスを取得
 	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
 	//今回は赤を書き込んでみる
-	materialData->color = { Vector4(1.0f, 0.0f, 0.0f, 1.0f) };
+	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialData->enableLighting = true;
 	materialData->shininess = 70.0f;
 	//wvp用のリソースを作る
@@ -772,7 +773,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Resource* cameraResource = CreateBufferResource(device, sizeof(CameraForGPU));
 	CameraForGPU* cameraData = nullptr;
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
-	cameraData->worldPosition = { 0.0f,0.0f,-100.0f };
+	cameraData->worldPosition = {0.0f,0.0f,-1.0f };
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//リソースの先頭のアドレスから使う
