@@ -755,6 +755,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//今回は赤を書き込んでみる
 	materialData->color = { Vector4(1.0f, 0.0f, 0.0f, 1.0f) };
 	materialData->enableLighting = true;
+	materialData->shininess = 70.0f;
 	//wvp用のリソースを作る
 	ID3D12Resource* wvpResource = CreateBufferResource(device, sizeof(TransformationMatrix));
 	//データを書き込む
@@ -1142,6 +1143,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2,useMonsterBall? textureSrvHandleGPU2:textureSrvHandleGPU);
 			//平行光源
 			commandList->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+			//カメラ
+			commandList->SetGraphicsRootConstantBufferView(4, cameraResource->GetGPUVirtualAddress());
 
 			//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
 			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
@@ -1245,6 +1248,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	CloseWindow(hwnd);
 
 	wvpResource->Release();
+	cameraResource->Release();
 	vertexResource->Release();
 	vertexResourceSprite->Release();
 	graphicsPipelineState->Release();
