@@ -773,7 +773,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ID3D12Resource* cameraResource = CreateBufferResource(device, sizeof(CameraForGPU));
 	CameraForGPU* cameraData = nullptr;
 	cameraResource->Map(0, nullptr, reinterpret_cast<void**>(&cameraData));
-	cameraData->worldPosition = {0.0f,0.0f,-1.0f };
+	cameraData->worldPosition = {0.0f,0.0f,-10.0f };
 	//頂点バッファビューを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	//リソースの先頭のアドレスから使う

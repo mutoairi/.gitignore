@@ -39,7 +39,8 @@ PixelShaderOutput main(VertexShaderOutput input)
     
     float32_t4 textureColor = gTexture.Sample(gSampler, input.texcoord);
     float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
-    float32_t3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
+    float32_t3 reflectLight = reflect(normalize(gDirectionalLight.direction), normalize
+    (input.normal));
     float RdotE = dot(reflectLight, toEye);
     float specularPow = pow(saturate(RdotE), gMaterial.shininess);
     PixelShaderOutput output;
