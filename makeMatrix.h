@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include<random>
 #define _USE_MATH_DEFINES
 
 struct Vector4 final
@@ -39,6 +40,12 @@ struct TransformationMatrix
 	Matrix4x4 WVP;
 	Matrix4x4 World;
 };
+struct ParticleForGPU
+{
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+	Vector4 color;
+};
 struct Material
 {
 	Vector4 color;
@@ -52,6 +59,14 @@ struct DirectionalLight
 	Vector3 direction;
 	float intensity;
 
+};
+struct Particle
+{
+	Transform transform;
+	Vector3 velocity;
+	Vector4 color;
+	float lifeTime;
+	float currentTime;
 };
 // 行列の掛け算
 Matrix4x4 MatrixMultiply(Matrix4x4 m1, Matrix4x4 m2) {
@@ -279,5 +294,22 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
 	return result;
 }
 
+Particle MakeNewParticle(std::mt19937& randomEngine) {
+	//Particle用
+	std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
+	Particle particle;
+	
+		particle.transform.scale = { 1.0f,1.0f,1.0f };
+		particle.transform.rotate = { 0.0f,0.0f,0.0f };
+		particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+		particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+	    
+	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
+	particle.color = { distColor(randomEngine),distColor(randomEngine) ,distColor(randomEngine) ,1.0f };
 
+	std::uniform_real_distribution<float>distTime(1.0f, 3.0f);
+	particle.lifeTime = distTime(randomEngine);
+	particle.currentTime = 0;
+		return particle;
+}
 
