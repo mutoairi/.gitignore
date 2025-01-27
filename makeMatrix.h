@@ -48,6 +48,14 @@ struct DirectionalLight
 	float intensity;
 
 };
+
+struct Material
+{
+	Vector4 color;
+	int32_t enableLighting;
+	float padding[3];
+	Matrix4x4 uvTransform;
+};
 // 行列の掛け算
 Matrix4x4 MatrixMultiply(Matrix4x4 m1, Matrix4x4 m2);
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);

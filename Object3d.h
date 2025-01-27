@@ -5,14 +5,9 @@
 #include<vector>
 #include<wrl.h>
 #include<cstdint>
+#include<d3d12.h>
 
-struct Material
-{
-	Vector4 color;
-	int32_t enableLighting;
-	float padding[3];
-	Matrix4x4 uvTransform;
-};
+
 
 struct MaterialData
 {
@@ -30,6 +25,8 @@ class Object3d
 {
 public:
 	void Initialize(Object3dCommon*object3dCommon);
+	void Update();
+	void Draw();
 
 	//.mtlファイルの読み取り
 	struct MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename);
@@ -60,5 +57,9 @@ private:
 	TransformationMatrix* wvpData = nullptr;
 	//平行光源
 	DirectionalLight* directionalLightData = nullptr;
+	Transform transform;
+	Transform cameraTransform;
+
+
 };
 

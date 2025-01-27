@@ -13,6 +13,38 @@ void Object3d::Initialize(Object3dCommon* object3dCommon)
 	//.objの参照しているテクスチャの読み込み
 	TextureManager::GetInstance()->LoadTexture(modelData.material.texturFilePath);
 	modelData.material.textureIndex = TextureManager::GetInstance()->GetTextureIndexByFilePath(modelData.material.texturFilePath);
+
+	//Transform変数を作る
+	transform= { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+	cameraTransform= { {1.0f,1.0f,1.0f},{0.3f,0.0f,0.0f},{0.0f,4.0f,-10.0f} };
+}
+
+void Object3d::Update()
+{
+	Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+	Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
+	Matrix4x4 viewMatrix = Inverse(cameraMatrix);
+	Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
+	Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
+	wvpData->WVP = worldviewProjectionMatrix;
+	wvpData->World = worldMatrix;
+}
+
+void Object3d::Draw()
+{
+	object3dCommon->GetDxcCommon()->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);//VBVを設定
+	//マテリアルCBufferの場所を設定
+	object3dCommon->GetDxcCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+	//wvp用のCBufferの場所を設定
+	object3dCommon->GetDxcCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(1, wvpResource->GetGPUVirtualAddress());
+	//SRVのDescriptorTableの先頭を設定
+	object3dCommon->GetDxcCommon()->GetCommandList()->SetGraphicsRootDescriptorTable(2, TextureManager::GetInstance()->GetSRVHandleGPU(modelData.material.textureIndex));
+	//平行光源
+	object3dCommon->GetDxcCommon()->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
+
+	//描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
+	object3dCommon->GetDxcCommon()->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+
 }
 
 MaterialData Object3d::LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename)
