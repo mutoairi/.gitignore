@@ -71,6 +71,12 @@
     <ClCompile Include="Object3d.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelCommon.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="externals\imugui\imconfig.h" />
@@ -93,6 +99,8 @@
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Object3dCommon.h" />
     <ClInclude Include="Object3d.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="ModelCommon.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="externals\imugui\LICENSE.txt" />
