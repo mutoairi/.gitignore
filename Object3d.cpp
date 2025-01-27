@@ -185,10 +185,10 @@ void Object3d::TransformInitialize()
 void Object3d::EnableLightInitialize()
 {
 	//平行光源用
-	Microsoft::WRL::ComPtr < ID3D12Resource> directionalLightResource = object3dCommon->GetDxcCommon()->CreateBufferResource(sizeof(DirectionalLight));
-	DirectionalLight* directionalLightData = nullptr;
+    directionalLightResource = object3dCommon->GetDxcCommon()->CreateBufferResource(sizeof(DirectionalLight));
+	
 	directionalLightResource->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
 	directionalLightData->direction = { 0.0f,1.0f,1.0f };
-	directionalLightData->intensity = 1.0f;
+	directionalLightData->intensity = 8.0f;
 }
