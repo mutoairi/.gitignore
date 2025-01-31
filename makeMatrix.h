@@ -299,14 +299,18 @@ Matrix4x4 Inverse(const Matrix4x4& m) {
 	return result;
 }
 
-Particle MakeNewParticle(std::mt19937& randomEngine) {
+Particle MakeNewParticle(std::mt19937& randomEngine,const Vector3&translate) {
 	//Particle用
 	std::uniform_real_distribution<float>distribution(-1.0f, 1.0f);
 	Particle particle;
 	
 		particle.transform.scale = { 1.0f,1.0f,1.0f };
 		particle.transform.rotate = { 0.0f,0.0f,0.0f };
-		particle.transform.translate = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+		Vector3 randomTranslate{ distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+		particle.transform.translate.x = translate.x + randomTranslate.x;
+		particle.transform.translate.y = translate.y + randomTranslate.y;
+		particle.transform.translate.z = translate.z + randomTranslate.z;
+
 		particle.velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	    
 	std::uniform_real_distribution<float>distColor(0.0f, 1.0f);
