@@ -154,6 +154,11 @@ Matrix4x4 MakeRotateZMatrix(float& rot) {
 	RotateMatZ = { cosf(rot), sinf(rot), 0, 0, -sinf(rot), cosf(rot), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1 };
 	return RotateMatZ;
 }
+Matrix4x4 MakeRotateYMatrix(float rot) {
+	Matrix4x4 RotateMatY = { 0 };
+	RotateMatY = { cosf(rot), 0, -sinf(rot), 0, 0, 1, 0, 0, sinf(rot), 0, cosf(rot), 0, 0, 0, 0, 1 };
+	return RotateMatY;
+}
 
 Matrix4x4 MakeTranslateMatrix(Vector3& translate) {
 	Matrix4x4 TranslateMat = { 0 };

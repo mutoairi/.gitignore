@@ -12,6 +12,7 @@
 #include<sstream>
 #include<wrl.h>
 #include<random>
+#include<numbers>
 
 #include"makeMatrix.h"
 #include"externals/imugui/imgui.h"
@@ -1102,7 +1103,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplDX12_Init(device.Get(), swapChainDesc.BufferCount, rtvDesc.Format,
 		srvDescriptorHeap.Get(), srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
-	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
+	Transform cameraTransform{ {1.0f,1.0f,1.0f},{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f},{0.0f,23.0f,10.0f} };
 	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	Transform uvTransformSprite{
 		{1.0f,1.0f,1.0f},
@@ -1125,6 +1126,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	const float kDeltaTime = 1.0f / 60.0f;
 	
 		bool useMonsterBall = true;
+		bool change=false;
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 
@@ -1138,13 +1140,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::DragFloat3("LightingDir", &directionalLightData->direction.x, 0.01f);
 		ImGui::DragFloat("lightinyencity", &directionalLightData->intensity,0.01f);
 		ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+		ImGui::Checkbox("cameraChange", &change);
+		
 		ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
 		ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 		ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 
 		// カラーパレットを縮小表示するためのflag
 		static bool showColorPicker = false;
-
+		
 		// カラーパレットの縮小表示
 		if (!showColorPicker)
 		{
@@ -1184,28 +1188,45 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		uvTransformMatrix = MatrixMultiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translate));
 		materialDataSprite->uvTransform = uvTransformMatrix;
 
+		Matrix4x4 backFrontMatrix = MakeRotateYMatrix(std::numbers::pi_v<float>);
+		Matrix4x4 billboardMatrix = MatrixMultiply(backFrontMatrix, cameraMatrix);
+		billboardMatrix.m[3][0] = 0.0f;//平行成分はいらない
+		billboardMatrix.m[3][1] = 0.0f;
+		billboardMatrix.m[3][2] = 0.0f;
+		
+
 		//Particle用の行列
 		uint32_t numInstance = 0;
 		for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
+
 			if (particles[index].lifeTime <= particles[index].currentTime) {
 				continue;
 			}
-
-			Matrix4x4 worldMatrixParticle = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+			
+			//Matrix4x4 worldMatrixParticle = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translate);
+			if (change) {
+				billboardMatrix = MakeIdentity4x4();
+			}
+				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+				Matrix4x4 translateMatrix=MakeTranslateMatrix(particles[index].transform.translate);
+				Matrix4x4 worldMatrixParticle = MatrixMultiply(MatrixMultiply(scaleMatrix, billboardMatrix), translateMatrix);
+			
+			
 			Matrix4x4 worldViewProjectionMatrixParticle = MatrixMultiply(worldMatrixParticle, MatrixMultiply(viewMatrix, projectionMatrix));
 
-			particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
+			/*particles[index].transform.translate.x += particles[index].velocity.x * kDeltaTime;
 			particles[index].transform.translate.y += particles[index].velocity.y * kDeltaTime;
 			particles[index].transform.translate.z += particles[index].velocity.z * kDeltaTime;
-			particles[index].currentTime += kDeltaTime;
+			particles[index].currentTime += kDeltaTime;*/
 			instancingData[numInstance].WVP = worldViewProjectionMatrixParticle;
 			instancingData[numInstance].World = worldMatrix;
 			instancingData[numInstance].color = particles[index].color;
-			float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
-			instancingData[numInstance].color.w = alpha;
+			//float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
+			//instancingData[numInstance].color.w = alpha;
 			++numInstance;
 		}
 
+		
 		ImGui::End();
 		
 		//ImGUi内部のコマンドを生成する
