@@ -1130,6 +1130,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	emitter.transform.translate = { 0.0f,0.0f,0.0f };
 	emitter.transform.rotate = { 0.0f,0.0f,0.0f };
 	emitter.transform.scale = { 1.0f,1.0f,1.0f };
+
+	AccelerationField accelerationField;
+	accelerationField.acceleration = { 5.0f,0.0f,0.0f };
+	accelerationField.area.min = { -1.0f,-1.0f,-1.0f };
+	accelerationField.area.max = { 1.0f,1.0f,1.0f };
 	//乱数初期化
 	std::random_device seedGenerator;
 	std::mt19937 randomEngine(seedGenerator());
@@ -1235,7 +1240,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			
 			
 			Matrix4x4 worldViewProjectionMatrixParticle = MatrixMultiply(worldMatrixParticle, MatrixMultiply(viewMatrix, projectionMatrix));
-
+			if (IsCollision(accelerationField.area, (*particleIterator).transform.translate)) {
+				(*particleIterator).transform.translate.x += accelerationField.acceleration.x * kDeltaTime;
+				(*particleIterator).transform.translate.y += accelerationField.acceleration.y * kDeltaTime;
+				(*particleIterator).transform.translate.z += accelerationField.acceleration.z * kDeltaTime;
+			}
 			(*particleIterator).transform.translate.x += (*particleIterator).velocity.x * kDeltaTime;
 			(*particleIterator).transform.translate.y += (*particleIterator).velocity.y * kDeltaTime;
 			(*particleIterator).transform.translate.z += (*particleIterator).velocity.z * kDeltaTime;

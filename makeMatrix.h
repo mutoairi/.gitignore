@@ -60,6 +60,10 @@ struct DirectionalLight
 	float intensity;
 
 };
+struct AABB {
+	Vector3 min; // 最小点
+	Vector3 max; // 最大点
+};
 struct Particle
 {
 	Transform transform;
@@ -67,6 +71,11 @@ struct Particle
 	Vector4 color;
 	float lifeTime;
 	float currentTime;
+};
+struct AccelerationField {
+	Vector3 acceleration;
+	AABB area;
+
 };
 // 行列の掛け算
 Matrix4x4 MatrixMultiply(Matrix4x4 m1, Matrix4x4 m2) {
@@ -322,3 +331,14 @@ Particle MakeNewParticle(std::mt19937& randomEngine,const Vector3&translate) {
 		return particle;
 }
 
+bool IsCollision(const AABB& aabb1, const Vector3& aabb2) {
+	Vector3 t1 = { min(aabb1.min.x,aabb2.x),min(aabb1.min.y,aabb2.y) ,min(aabb1.min.z,aabb2.z) };
+	Vector3 t2 = { max(aabb1.max.x,aabb2.x),max(aabb1.max.y,aabb2.y) ,max(aabb1.max.z,aabb2.z) };
+
+	float tMin = max(max(t1.x, t1.y), t1.z);
+	float tMax = min(min(t2.x, t2.y), t2.z);
+	if (tMin <= tMax) {
+		return true;
+	}
+	return false;
+}
