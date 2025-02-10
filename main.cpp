@@ -298,6 +298,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete input;
 	delete dxcCommon;
 	delete spriteCommon;
+	delete objectCommon;
+	delete object3d;
 	for (Sprite* sprite : sprites) {
 		delete sprite;
 	}
