@@ -648,13 +648,9 @@ HRESULT hr;
 
 		}
 	}
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
-	OutputDebugStringA("HelloDirectX!\n");
 	
 	//解放処理
-	//CloseHandle(fenceEvent);
+	
 	
 	//入力解放
 	delete input;

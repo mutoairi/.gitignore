@@ -15,9 +15,9 @@
 class DirectXCommon
 {
 public:
-
+	~DirectXCommon();
 	void Initialize(WinApp*);
-
+	void Finalize();
 	//デスクリプタヒープ生成
 	Microsoft::WRL::ComPtr < ID3D12DescriptorHeap> CreateDescriptorHeap
 	( D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT numDescriptors, bool shaderVisible);

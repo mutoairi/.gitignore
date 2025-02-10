@@ -12,6 +12,10 @@
 #pragma comment(lib,"dxcompiler.lib")
 
 using namespace Microsoft::WRL;
+DirectXCommon::~DirectXCommon()
+{
+	Finalize();
+}
 void DirectXCommon::Initialize(WinApp*winApp)
 {
 	//FPS固定の初期化
@@ -46,6 +50,18 @@ void DirectXCommon::Initialize(WinApp*winApp)
 	DXCCompilerInitialize();
 	//ImGuiの初期化
 	ImGuiInitialize();
+}
+
+void DirectXCommon::Finalize()
+{
+	if (fenceEvent) {
+		CloseHandle(fenceEvent);
+	}
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+	OutputDebugStringA("HelloDirectX!\n");
+
 }
 
 //
