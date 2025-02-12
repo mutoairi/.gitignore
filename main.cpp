@@ -10,6 +10,7 @@
 #include<math.h>
 #include<fstream>
 #include<sstream>
+#include <iostream>
 #include<wrl.h>
 #include<list>
 #include"Input.h"
@@ -310,7 +311,13 @@ dxcCommon->Initialize(winApp);
 	Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
 	Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
 	
-	
+	std::list<const char*>rosen = { "Tokyo", "Kanda", "Akihabara", "Okachimachi", "Ueno",
+		"Uguisudani", "Nippori", "Tabata", "Komagome",
+		"Sugamo", "Otsuka", "Ikebukuro", "Mejiro", "Takadanobaba",
+		"Shin-Okubo", "Shinjuku", "Yoyogi", "Harajuku", "Shibuya",
+		"Ebisu", "Meguro", "Gotanda", "Osaki", "Shinagawa",
+		"Tamachi", "Hamamatsucho", "Shimbashi", "Yurakucho" };
+
 	bool useMonsterBall = true;
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
@@ -336,33 +343,55 @@ dxcCommon->Initialize(winApp);
 			ImGui::NewFrame();
 			ImGui::Begin("WIndow");
 			//ImGui::DragFloat3("Color", &materialData->color.x, 0.01f);
-			ImGui::SliderAngle("SpherRotate", &transform.rotate.y);
-			ImGui::DragFloat3("LightingColor", &directionalLightData->color.x, 0.01f);
-			ImGui::DragFloat3("LightingDir", &directionalLightData->direction.x, 0.01f);
-			ImGui::DragFloat("lightinyencity", &directionalLightData->intensity, 0.01f);
-			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
-			/*ImGui::DragFloat2("UVTranslate", &uvTransformSprite.translate.x, 0.01f, -10.0f, 10.0f);
-			ImGui::DragFloat2("UVScale", &uvTransformSprite.scale.x, 0.01f, -10.0f, 10.0f);
-			ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);*/
-
-			// カラーパレットを縮小表示するためのflag
-			static bool showColorPicker = false;
-
-			// カラーパレットの縮小表示
-			if (!showColorPicker)
+			
+			ImGui::Text("=============1970============\n");
+			
+			for (const char*itr:rosen)
 			{
-				if (ImGui::Button("color palette"))
-					showColorPicker = true;
+				ImGui::Text("%s", itr);
 			}
 
-			//// カラーパレットの拡大表示
-			//if (showColorPicker)
-			//{
-			//	ImGui::ColorPicker4("Color", (float*)&materialData->color.x, ImGuiColorEditFlags_Float);
+			ImGui::Text("\n=============2019============\n");
+			std::list<const char*>rosen2019 = rosen;
+			auto it = rosen2019.begin();
+			for (;it!=rosen2019.end();++it)
+			{
+				if (std::string(*it) == "Nippori") {
+					++it;
+					rosen2019.insert(it, "Nishi-Nippori");
+					
+					break;
+					
+				}
+				
+			}
+			
+
+			for (const char* itr : rosen2019)
+			{
+				ImGui::Text("%s", itr);
+			}
+
+			ImGui::Text("\n=============2022============\n");
+			std::list<const char*>rosen2022 = rosen2019;
+			auto it2 = rosen2022.begin();
+			for (; it2 != rosen2022.end(); ++it2)
+			{
+				if (std::string(*it2) == "Tamachi") {
+					++it;
+					rosen2022.insert(it2, "Takanawa Gateway");
+
+					break;
+
+				}
+
+			}
 
 
-			//}
-
+			for (const char* itr : rosen2022)
+			{
+				ImGui::Text("%s", itr);
+			}
 
 			//ゲームの処理
 
@@ -414,7 +443,7 @@ dxcCommon->Initialize(winApp);
 			//Sprite描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
 			for (Sprite* sprite : sprites) {
 				
-				sprite->Draw();
+				//sprite->Draw();
 			}
 			//
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxcCommon->GetCommandList());
