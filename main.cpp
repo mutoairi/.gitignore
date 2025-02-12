@@ -19,6 +19,7 @@
 #include"SpriteCommon.h"
 #include"Sprite.h"
 #include"TextureManager.h"
+#include"GameManeger.h"
 
 #include"makeMatrix.h"
 #include"externals/imugui/imgui.h"
@@ -220,6 +221,9 @@ dxcCommon->Initialize(winApp);
 	TextureManager::GetInstance()->Initialize(dxcCommon);
 	//Textureを読んで転送する
 	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
+	TextureManager::GetInstance()->LoadTexture("resources/monsterBall.png");
+	TextureManager::GetInstance()->LoadTexture("resources/skydome.png");
+
 	//TextureManager::GetInstance()->LoadTexture("resources/monsterBall.png");
 
 	////const uint32_t kSubdivision = 16;
@@ -273,6 +277,7 @@ dxcCommon->Initialize(winApp);
 	}
 
 	
+	
 
 	//平行光源用
 	Microsoft::WRL::ComPtr < ID3D12Resource> directionalLightResource = dxcCommon->CreateBufferResource( sizeof(DirectionalLight));
@@ -312,6 +317,9 @@ dxcCommon->Initialize(winApp);
 	
 	
 	bool useMonsterBall = true;
+	GameManeger* gameManeger = nullptr;
+    gameManeger = new GameManeger();
+	gameManeger->Initialize(input, spriteCommon);
 	//ウィンドウのボタンが押されるまでループ
 	while (msg.message != WM_QUIT) {
 
@@ -325,10 +333,12 @@ dxcCommon->Initialize(winApp);
 
 			//入力更新
 			input->Update();
-
+			
 			if (input->TriggerKey(DIK_0)) {
 				OutputDebugStringA("Hit 0\n");
 			}
+			
+			
 
 
 			ImGui_ImplDX12_NewFrame();
@@ -373,14 +383,15 @@ dxcCommon->Initialize(winApp);
 			Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
 			wvpData->WVP = worldviewProjectionMatrix;
 			wvpData->World = worldMatrix;*/
-
-			for (size_t i = 0; i < sprites.size(); ++i) {
-				Sprite* sprite = sprites[i];
-
-				//Spriteの更新
-				sprite->Update();
-			}
 			
+
+			//for (size_t i = 0; i < sprites.size(); ++i) {
+			//	Sprite* sprite = sprites[i];
+
+			//	//Spriteの更新
+			//	sprite->Update();
+			//}
+			gameManeger->Update();
 			ImGui::End();
 
 			//ImGUi内部のコマンドを生成する
@@ -411,11 +422,12 @@ dxcCommon->Initialize(winApp);
 			//平行光源
 			dxcCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightResource->GetGPUVirtualAddress());
 
-			//Sprite描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
+			/*Sprite描画！(DrawCall/ドローコール)。3頂点出一つのインスタンス。インスタンスについては今後
 			for (Sprite* sprite : sprites) {
 				
 				sprite->Draw();
-			}
+			}*/
+			gameManeger->Draw();
 			//
 			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), dxcCommon->GetCommandList());
 

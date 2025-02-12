@@ -152,6 +152,7 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ClearScene.cpp" />
     <ClCompile Include="D3DResourceLeakChecker.cpp" />
     <ClCompile Include="DirectXCommon.cpp" />
     <ClCompile Include="externals\imugui\imgui.cpp" />
@@ -161,17 +162,22 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClCompile Include="externals\imugui\imgui_impl_win32.cpp" />
     <ClCompile Include="externals\imugui\imgui_tables.cpp" />
     <ClCompile Include="externals\imugui\imgui_widgets.cpp" />
+    <ClCompile Include="GameManeger.cpp" />
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="IScene.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="makeMatrix.cpp" />
     <ClCompile Include="Sprite.cpp" />
     <ClCompile Include="SpriteCommon.cpp" />
+    <ClCompile Include="StageScene.cpp" />
     <ClCompile Include="StringUtility.cpp" />
     <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="WinApp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ClearScene.h" />
     <ClInclude Include="D3DResourceLeakChecker.h" />
     <ClInclude Include="DirectXCommon.h" />
     <ClInclude Include="externals\imugui\imconfig.h" />
@@ -182,13 +188,17 @@ copy "$(WindowsSdkDir)bin\$(TargetPlatformVersion)\x64\dxil.dll" "$(TargetDir)dx
     <ClInclude Include="externals\imugui\imstb_rectpack.h" />
     <ClInclude Include="externals\imugui\imstb_textedit.h" />
     <ClInclude Include="externals\imugui\imstb_truetype.h" />
+    <ClInclude Include="GameManeger.h" />
     <ClInclude Include="Input.h" />
+    <ClInclude Include="IScene.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="makeMatrix.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteCommon.h" />
+    <ClInclude Include="StageScene.h" />
     <ClInclude Include="StringUtility.h" />
     <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="TitleScene.h" />
     <ClInclude Include="WinApp.h" />
   </ItemGroup>
   <ItemGroup>
