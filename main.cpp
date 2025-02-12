@@ -222,44 +222,44 @@ dxcCommon->Initialize(winApp);
 	TextureManager::GetInstance()->LoadTexture("resources/uvChecker.png");
 	//TextureManager::GetInstance()->LoadTexture("resources/monsterBall.png");
 
-	//const uint32_t kSubdivision = 16;
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
-	Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = dxcCommon->CreateBufferResource( sizeof(VertexData) * modelData.vertices.size());
-	Microsoft::WRL::ComPtr < ID3D12Resource> materialResource = dxcCommon->CreateBufferResource( sizeof(Material));
-	//	マテリアルにデータを書き込む
-	Material* materialData = nullptr;
-	//書き込むためのアドレスを取得
-	materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
-	//今回は赤を書き込んでみる
-	materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-	materialData->enableLighting = true;
-	materialData->uvTransform = MakeIdentity4x4();
-	//wvp用のリソースを作る
-	Microsoft::WRL::ComPtr < ID3D12Resource> wvpResource = dxcCommon->CreateBufferResource( sizeof(TransformationMatrix));
-	//データを書き込む
-	TransformationMatrix* wvpData = nullptr;
-	//Matrix4x4* transformationMatrixData = nullptr;
-	//書き込むためのアドレスを取得
-	wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
-	//単位行列を書き込んでおく
-	wvpData->WVP = MakeIdentity4x4();
-	wvpData->World = MakeIdentity4x4();
-	//*transformationMatrixData = MakeIdentity4x4();
-	//頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
-	//リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//使用するリソースのサイズは頂点3つ文のサイズ
-	vertexBufferView.SizeInBytes =UINT( sizeof(VertexData)*modelData.vertices.size());
+	////const uint32_t kSubdivision = 16;
+	//ModelData modelData = LoadObjFile("resources", "plane.obj");
+	//Microsoft::WRL::ComPtr < ID3D12Resource> vertexResource = dxcCommon->CreateBufferResource( sizeof(VertexData) * modelData.vertices.size());
+	//Microsoft::WRL::ComPtr < ID3D12Resource> materialResource = dxcCommon->CreateBufferResource( sizeof(Material));
+	////	マテリアルにデータを書き込む
+	//Material* materialData = nullptr;
+	////書き込むためのアドレスを取得
+	//materialResource->Map(0, nullptr, reinterpret_cast<void**>(&materialData));
+	////今回は赤を書き込んでみる
+	//materialData->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
+	//materialData->enableLighting = true;
+	//materialData->uvTransform = MakeIdentity4x4();
+	////wvp用のリソースを作る
+	//Microsoft::WRL::ComPtr < ID3D12Resource> wvpResource = dxcCommon->CreateBufferResource( sizeof(TransformationMatrix));
+	////データを書き込む
+	//TransformationMatrix* wvpData = nullptr;
+	////Matrix4x4* transformationMatrixData = nullptr;
+	////書き込むためのアドレスを取得
+	//wvpResource->Map(0, nullptr, reinterpret_cast<void**>(&wvpData));
+	////単位行列を書き込んでおく
+	//wvpData->WVP = MakeIdentity4x4();
+	//wvpData->World = MakeIdentity4x4();
+	////*transformationMatrixData = MakeIdentity4x4();
+	////頂点バッファビューを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
+	////リソースの先頭のアドレスから使う
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////使用するリソースのサイズは頂点3つ文のサイズ
+	//vertexBufferView.SizeInBytes =UINT( sizeof(VertexData)*modelData.vertices.size());
 
-	//1頂点当たりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
+	////1頂点当たりのサイズ
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
 
-	//頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
-	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
+	////頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	////書き込むためのアドレスを取得
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData)* modelData.vertices.size());
 
 	
 	//Spriteを作成
@@ -283,10 +283,10 @@ dxcCommon->Initialize(winApp);
 	directionalLightData->intensity = 1.0f;
 
 	
-	
-	//2枚目のTextureを読んで転送する
-	TextureManager::GetInstance()->LoadTexture(modelData.material.texturFilePath);
-	
+	//
+	////2枚目のTextureを読んで転送する
+	//TextureManager::GetInstance()->LoadTexture(modelData.material.texturFilePath);
+	//
 	
 
 	
@@ -335,7 +335,7 @@ dxcCommon->Initialize(winApp);
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
 			ImGui::Begin("WIndow");
-			ImGui::DragFloat3("Color", &materialData->color.x, 0.01f);
+			//ImGui::DragFloat3("Color", &materialData->color.x, 0.01f);
 			ImGui::SliderAngle("SpherRotate", &transform.rotate.y);
 			ImGui::DragFloat3("LightingColor", &directionalLightData->color.x, 0.01f);
 			ImGui::DragFloat3("LightingDir", &directionalLightData->direction.x, 0.01f);
@@ -355,24 +355,24 @@ dxcCommon->Initialize(winApp);
 					showColorPicker = true;
 			}
 
-			// カラーパレットの拡大表示
-			if (showColorPicker)
-			{
-				ImGui::ColorPicker4("Color", (float*)&materialData->color.x, ImGuiColorEditFlags_Float);
+			//// カラーパレットの拡大表示
+			//if (showColorPicker)
+			//{
+			//	ImGui::ColorPicker4("Color", (float*)&materialData->color.x, ImGuiColorEditFlags_Float);
 
 
-			}
+			//}
 
 
 			//ゲームの処理
 
-			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
+			/*Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translate);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translate);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, float(WinApp::kClientWidth) / float(WinApp::kClientHeight), 0.1f, 100.0f);
 			Matrix4x4 worldviewProjectionMatrix = MatrixMultiply(worldMatrix, MatrixMultiply(viewMatrix, projectionMatrix));
 			wvpData->WVP = worldviewProjectionMatrix;
-			wvpData->World = worldMatrix;
+			wvpData->World = worldMatrix;*/
 
 			for (size_t i = 0; i < sprites.size(); ++i) {
 				Sprite* sprite = sprites[i];
